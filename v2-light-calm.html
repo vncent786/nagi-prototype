@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f1e9">
+  <title>Nagi onboarding</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #f4f1e9;
+      --ink: #2d302d;
+      --muted: #777872;
+      --faint: #a3a39c;
+      --line: #d8d5cb;
+      --harbor: #276c76;
+      --harbor-pale: #dce8e6;
+      --surface: #ebe8df;
+      --white: #faf9f5;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--paper); }
+    body {
+      min-height: 100%;
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Inter Tight", system-ui, sans-serif;
+      font-weight: 400;
+      letter-spacing: .008em;
+      -webkit-font-smoothing: antialiased;
+    }
+    button { font: inherit; color: inherit; }
+
+    .app {
+      position: relative;
+      width: min(100%, 430px);
+      min-height: 100svh;
+      margin: 0 auto;
+      overflow: hidden;
+      background: var(--paper);
+    }
+
+    .topbar {
+      position: fixed;
+      z-index: 30;
+      top: 0;
+      left: 50%;
+      width: min(100%, 430px);
+      height: calc(68px + env(safe-area-inset-top));
+      transform: translateX(-50%);
+      display: grid;
+      grid-template-columns: 64px 1fr 64px;
+      align-items: end;
+      padding: env(safe-area-inset-top) 26px 16px;
+      background: color-mix(in srgb, var(--paper) 94%, transparent);
+      backdrop-filter: blur(12px);
+    }
+    .back {
+      min-height: 32px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 12px;
+      text-align: left;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .back.is-visible { opacity: 1; pointer-events: auto; }
+    .steps { display: flex; justify-content: center; gap: 7px; padding-bottom: 12px; }
+    .step {
+      width: 4px;
+      height: 4px;
+      background: var(--line);
+      transition: width 320ms ease, background-color 320ms ease;
+    }
+    .step.is-current { width: 15px; background: var(--harbor); }
+
+    .viewport {
+      min-height: 100svh;
+      padding: calc(78px + env(safe-area-inset-top)) 30px max(28px, env(safe-area-inset-bottom));
+    }
+    .screen {
+      display: none;
+      min-height: calc(100svh - 106px - env(safe-area-inset-top));
+      flex-direction: column;
+      opacity: 0;
+      transform: translate3d(0, 5px, 0);
+    }
+    .screen.is-active {
+      display: flex;
+      animation: arrive 520ms cubic-bezier(.22, .72, .2, 1) forwards;
+    }
+    @keyframes arrive { to { opacity: 1; transform: translate3d(0, 0, 0); } }
+
+    .opening { padding-top: clamp(30px, 6vh, 62px); }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 42px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .17em;
+      text-transform: uppercase;
+    }
+    .square { width: 6px; height: 6px; flex: 0 0 auto; background: var(--harbor); }
+    .kicker {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .09em;
+    }
+    h1, h2 {
+      margin: 0;
+      font-weight: 400;
+      letter-spacing: -.025em;
+      text-wrap: balance;
+    }
+    h1 { max-width: 350px; font-size: clamp(36px, 10vw, 44px); line-height: 1.04; }
+    h2 { max-width: 350px; font-size: 30px; line-height: 1.1; }
+    .lead {
+      max-width: 340px;
+      margin: 20px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.55;
+      text-wrap: pretty;
+    }
+    .spacer { flex: 1; min-height: 28px; }
+
+    .primary, .secondary {
+      width: 100%;
+      min-height: 54px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: transform 120ms ease, opacity 180ms ease, background-color 180ms ease;
+    }
+    .primary:active, .secondary:active { transform: scale(.992); }
+    .primary {
+      border: 1px solid var(--harbor);
+      background: var(--harbor);
+      color: var(--white);
+      font-weight: 500;
+    }
+    .primary:disabled { opacity: .28; cursor: not-allowed; }
+    .secondary {
+      margin-top: 10px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+    }
+    .text-button {
+      min-height: 40px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 11px;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+    button:focus-visible, summary:focus-visible {
+      outline: 1px solid var(--harbor);
+      outline-offset: 4px;
+    }
+
+    .calm-demo {
+      position: relative;
+      height: 240px;
+      margin-top: 38px;
+      overflow: hidden;
+    }
+    .demo-notification {
+      position: absolute;
+      z-index: 3;
+      top: 12px;
+      left: 8px;
+      right: 8px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: color-mix(in srgb, var(--white) 82%, transparent);
+      animation: notify 6.4s cubic-bezier(.22, .72, .2, 1) infinite;
+    }
+    .notification-head { display: flex; justify-content: space-between; color: var(--faint); font-size: 9px; }
+    .notification-main { margin-top: 9px; font-size: 13px; }
+    .notification-sub { margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .quiet-line {
+      position: absolute;
+      z-index: 1;
+      top: 89px;
+      left: 31px;
+      width: 1px;
+      height: 72px;
+      background: var(--line);
+      transform-origin: top;
+      animation: lineGrow 6.4s ease infinite;
+    }
+    .traveller {
+      position: absolute;
+      z-index: 2;
+      top: 87px;
+      left: 29px;
+      width: 5px;
+      height: 5px;
+      background: var(--harbor);
+      animation: travel 6.4s cubic-bezier(.4, 0, .2, 1) infinite;
+    }
+    .ledger-sample {
+      position: absolute;
+      z-index: 2;
+      left: 8px;
+      right: 8px;
+      bottom: 19px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      padding: 15px 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      opacity: 0;
+      animation: ledgerIn 6.4s ease infinite;
+    }
+    .ledger-name { font-size: 13px; }
+    .ledger-meta { margin-top: 4px; color: var(--muted); font-size: 10px; }
+    .ledger-amount { font-size: 13px; font-variant-numeric: tabular-nums; }
+    @keyframes notify {
+      0%, 8% { opacity: 0; transform: translate3d(0, -15px, 0); }
+      18%, 67% { opacity: 1; transform: translate3d(0, 0, 0); }
+      78%, 100% { opacity: .35; transform: translate3d(0, 0, 0); }
+    }
+    @keyframes lineGrow {
+      0%, 31% { transform: scaleY(0); }
+      47%, 100% { transform: scaleY(1); }
+    }
+    @keyframes travel {
+      0%, 31% { opacity: 0; transform: translate3d(0, 0, 0); }
+      38% { opacity: 1; }
+      55%, 100% { opacity: 1; transform: translate3d(0, 72px, 0); }
+    }
+    @keyframes ledgerIn {
+      0%, 51% { opacity: 0; transform: translate3d(0, 7px, 0); }
+      62%, 91% { opacity: 1; transform: translate3d(0, 0, 0); }
+      100% { opacity: 0; }
+    }
+
+    .choices { margin-top: 35px; border-top: 1px solid var(--line); }
+    .choice {
+      width: 100%;
+      min-height: 64px;
+      display: grid;
+      grid-template-columns: 1fr 18px;
+      align-items: center;
+      gap: 18px;
+      padding: 0;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+      font-size: 15px;
+    }
+    .choice-box { width: 8px; height: 8px; border: 1px solid var(--faint); }
+    .choice[aria-pressed="true"] { color: var(--harbor); }
+    .choice[aria-pressed="true"] .choice-box { border-color: var(--harbor); background: var(--harbor); }
+
+    .example-note { margin-bottom: 9px; color: var(--faint); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; }
+    .sample-notification {
+      margin-top: 34px;
+      padding: 16px 17px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--surface);
+      animation: sampleBreathe 4s ease-in-out infinite;
+    }
+    @keyframes sampleBreathe { 0%, 100% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(0, -3px, 0); } }
+    .capture-zone { margin-top: 38px; }
+    .capture-line {
+      width: 1px;
+      height: 30px;
+      margin: 0 0 0 22px;
+      background: var(--line);
+      transform-origin: top;
+      transform: scaleY(0);
+      transition: transform 420ms ease;
+    }
+    .capture-result {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      padding: 15px 0;
+      border-top: 1px solid transparent;
+      border-bottom: 1px solid transparent;
+      opacity: 0;
+      transform: translate3d(0, 7px, 0);
+      transition: opacity 420ms ease 180ms, transform 420ms ease 180ms, border-color 420ms ease;
+    }
+    .capture-zone.is-done .capture-line { transform: scaleY(1); }
+    .capture-zone.is-done .capture-result { opacity: 1; transform: translate3d(0, 0, 0); border-color: var(--line); }
+
+    .category-row { margin-top: 36px; }
+    .small-label { color: var(--muted); font-size: 11px; }
+    .category-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; }
+    .category {
+      min-height: 42px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      background: transparent;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .category[aria-pressed="true"] { border-color: var(--harbor); background: var(--harbor-pale); color: var(--harbor); }
+    .personal-copy { margin-top: 26px; color: var(--muted); font-size: 12px; line-height: 1.55; }
+
+    .permission-copy {
+      margin-top: 40px;
+      padding: 22px 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.62;
+    }
+    .permission-copy strong { color: var(--ink); font-weight: 500; }
+    details { margin-top: 18px; border-bottom: 1px solid var(--line); }
+    summary {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 12px;
+      list-style: none;
+    }
+    summary::-webkit-details-marker { display: none; }
+    details[open] summary { color: var(--harbor); }
+    .details-body { padding: 0 0 18px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+
+    .review-label { margin-bottom: 17px; color: var(--harbor); font-size: 9px; letter-spacing: .11em; text-transform: uppercase; }
+    .paywall-note { margin: 18px 0 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .value-pair { margin-top: 34px; border-top: 1px solid var(--line); }
+    .value-row { padding: 17px 0; border-bottom: 1px solid var(--line); }
+    .value-title { font-size: 14px; }
+    .value-copy { margin-top: 5px; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .offer {
+      margin-top: 28px;
+      padding: 18px 0;
+      border-top: 1px solid var(--ink);
+      border-bottom: 1px solid var(--ink);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: center;
+    }
+    .trial { font-size: 16px; }
+    .after-trial { margin-top: 4px; color: var(--muted); font-size: 10px; }
+    .price { font-size: 15px; text-align: right; }
+    .billing { margin: 15px 0 20px; color: var(--muted); font-size: 10px; line-height: 1.55; }
+    .legal { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; margin-top: 10px; }
+    .legal button {
+      min-height: 36px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 10px;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .setting-line {
+      margin-top: 44px;
+      padding: 18px 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .off { color: var(--harbor); }
+    .setup-copy { margin-top: 20px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+
+    .toast {
+      position: fixed;
+      z-index: 60;
+      left: 50%;
+      bottom: max(22px, env(safe-area-inset-bottom));
+      width: min(calc(100% - 40px), 386px);
+      transform: translateX(-50%);
+      padding: 13px 15px;
+      border: 1px solid var(--line);
+      background: var(--white);
+      color: var(--muted);
+      font-size: 11px;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 200ms ease;
+    }
+    .toast.is-visible { opacity: 1; }
+
+    @media (min-width: 700px) {
+      body { padding: 34px 0; background: #dfdcd4; }
+      .app { min-height: 880px; border: 1px solid #d0cdc4; }
+      .topbar { position: absolute; }
+      .screen { min-height: 750px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .demo-notification, .ledger-sample { opacity: 1; transform: none; }
+      .quiet-line { transform: scaleY(1); }
+      .traveller { opacity: 1; transform: translate3d(0, 72px, 0); }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <button class="back" id="back" type="button">Back</button>
+      <div class="steps" id="steps" aria-label="Onboarding progress"></div>
+      <span></span>
+    </header>
+
+    <div class="viewport">
+      <section class="screen opening is-active" data-screen="0" aria-labelledby="welcomeTitle">
+        <div class="brand"><span class="square"></span><span>Nagi</span></div>
+        <p class="kicker">A quieter way to keep track</p>
+        <h1 id="welcomeTitle">Your spending, kept quietly.</h1>
+        <p class="lead">Pay as usual. Nagi keeps a tidy record from supported payment notifications. You never connect a bank account.</p>
+        <div class="calm-demo" aria-label="Example payment notification becoming a Nagi expense">
+          <div class="demo-notification">
+            <div class="notification-head"><span>Harbor Pay</span><span>now</span></div>
+            <div class="notification-main">Payment complete</div>
+            <div class="notification-sub">$4.80 at Harbor Coffee</div>
+          </div>
+          <div class="quiet-line"></div>
+          <div class="traveller"></div>
+          <div class="ledger-sample">
+            <div><div class="ledger-name">Harbor Coffee</div><div class="ledger-meta">Dining / Today</div></div>
+            <div class="ledger-amount">$4.80</div>
+          </div>
+        </div>
+        <div class="spacer"></div>
+        <button class="primary" data-next type="button">Try a sample</button>
+        <button class="text-button" data-toast="Login is not connected in this review build." type="button">I already use Nagi</button>
+      </section>
+
+      <section class="screen" data-screen="1" aria-labelledby="goalTitle">
+        <p class="kicker">Make the first view yours</p>
+        <h2 id="goalTitle">What would you want to notice first?</h2>
+        <p class="lead">Pick one. Nagi can change with you later.</p>
+        <div class="choices" id="goals">
+          <button class="choice" data-goal="where" aria-pressed="false" type="button"><span>Where my money goes</span><span class="choice-box"></span></button>
+          <button class="choice" data-goal="intentional" aria-pressed="false" type="button"><span>How much I can still spend</span><span class="choice-box"></span></button>
+          <button class="choice" data-goal="change" aria-pressed="false" type="button"><span>When a category starts growing</span><span class="choice-box"></span></button>
+          <button class="choice" data-goal="recent" aria-pressed="false" type="button"><span>What I spent recently</span><span class="choice-box"></span></button>
+        </div>
+        <div class="spacer"></div>
+        <button class="primary" id="goalNext" data-next type="button" disabled>Continue</button>
+      </section>
+
+      <section class="screen" data-screen="2" aria-labelledby="sampleTitle">
+        <p class="kicker">This one is only a sample</p>
+        <h2 id="sampleTitle">See what Nagi would keep.</h2>
+        <p class="lead">This page cannot read your notifications. Tap below to try the capture yourself.</p>
+        <div class="sample-notification">
+          <div class="example-note">Example notification</div>
+          <div class="notification-head"><span>Harbor Pay</span><span>now</span></div>
+          <div class="notification-main">Payment complete</div>
+          <div class="notification-sub">$4.80 at Harbor Coffee</div>
+        </div>
+        <div class="capture-zone" id="captureZone">
+          <div class="capture-line"></div>
+          <div class="capture-result">
+            <div><div class="ledger-name">Harbor Coffee</div><div class="ledger-meta">Dining / Today</div></div>
+            <div class="ledger-amount">$4.80</div>
+          </div>
+        </div>
+        <div class="spacer"></div>
+        <button class="primary" id="capture" type="button">Keep this expense</button>
+      </section>
+
+      <section class="screen" data-screen="3" aria-labelledby="correctTitle">
+        <p class="kicker">You still have the last word</p>
+        <h2 id="correctTitle">Does Dining look right?</h2>
+        <p class="lead">Change it if Nagi guessed wrong.</p>
+        <div class="capture-result" style="margin-top:34px;opacity:1;transform:none;border-color:var(--line)">
+          <div><div class="ledger-name">Harbor Coffee</div><div class="ledger-meta" id="expenseMeta">Dining / Today</div></div>
+          <div class="ledger-amount">$4.80</div>
+        </div>
+        <div class="category-row">
+          <div class="small-label">Category</div>
+          <div class="category-list" id="categories">
+            <button class="category" aria-pressed="true" type="button">Dining</button>
+            <button class="category" aria-pressed="false" type="button">Transport</button>
+            <button class="category" aria-pressed="false" type="button">Shopping</button>
+            <button class="category" aria-pressed="false" type="button">Bills</button>
+            <button class="category" aria-pressed="false" type="button">Other</button>
+          </div>
+        </div>
+        <p class="personal-copy" id="personalCopy">Your home view will start with where your money goes.</p>
+        <div class="spacer"></div>
+        <button class="primary" data-next type="button">That looks right</button>
+      </section>
+
+      <section class="screen" data-screen="4" aria-labelledby="permissionTitle">
+        <p class="kicker">One thing before the trial</p>
+        <h2 id="permissionTitle">Nagi needs Android Notification Access.</h2>
+        <div class="permission-copy"><strong>Android's switch gives Nagi visibility into notifications from all apps.</strong> Nagi is designed to filter supported payment notifications on your phone. You can turn access off at any time.</div>
+        <details>
+          <summary>Read what this means</summary>
+          <div class="details-body">Nagi does not need your bank login. Automatic capture depends on the details shown by your payment app, so some notifications may need your help. The production privacy wording will be checked against the final app, its logs, backups, SDKs, and optional Couple Sync.</div>
+        </details>
+        <div class="spacer"></div>
+        <button class="primary" data-next type="button">I've read this</button>
+      </section>
+
+      <section class="screen" data-screen="5" aria-labelledby="paywallTitle">
+        <div class="review-label">Review build / nothing will be charged</div>
+        <p class="kicker">Seven days to try it properly</p>
+        <h2 id="paywallTitle">Let Nagi keep the record.</h2>
+        <p class="paywall-note" id="paywallNote">See where your money has been going, without logging every purchase.</p>
+        <div class="value-pair">
+          <div class="value-row"><div class="value-title">Capture</div><div class="value-copy">Supported payment notifications become expenses you can review.</div></div>
+          <div class="value-row"><div class="value-title">Understand</div><div class="value-copy">Keep your history, categories, and trends in one quiet view.</div></div>
+        </div>
+        <div class="offer">
+          <div><div class="trial">7 days free</div><div class="after-trial">Prototype offer</div></div>
+          <div class="price">then US$24.99/year</div>
+        </div>
+        <p class="billing">Prototype pricing only. A production offer would use Google Play's localized price, eligibility, renewal terms, and cancellation flow. Automatic capture requires Notification Access after activation.</p>
+        <button class="primary" id="trial" type="button">Start my 7-day trial</button>
+        <button class="secondary" data-toast="Monthly pricing has not been decided." type="button">See another plan</button>
+        <div class="legal">
+          <button data-toast="Restore purchases is not connected in this review build." type="button">Restore</button>
+          <button data-toast="Terms are not final yet." type="button">Terms</button>
+          <button data-toast="Privacy wording is not final yet." type="button">Privacy</button>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="6" aria-labelledby="settingsTitle">
+        <p class="kicker">After the trial starts</p>
+        <h2 id="settingsTitle">Turn on automatic tracking.</h2>
+        <p class="lead">Android will open its own settings page. Find Nagi, turn on Notification Access, then come back.</p>
+        <div class="setting-line"><span>Notification Access</span><span class="off">Off</span></div>
+        <p class="setup-copy">The app will check the setting when you return. It will not assume you turned it on.</p>
+        <div class="spacer"></div>
+        <button class="primary" data-toast="This webpage cannot open Nagi's real Android settings page." type="button">Open Android settings</button>
+        <button class="secondary" data-toast="You would continue with manual entry and can enable automatic capture later." type="button">Not now</button>
+      </section>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    const screens = [...document.querySelectorAll('.screen')];
+    const steps = document.getElementById('steps');
+    const back = document.getElementById('back');
+    const goalNext = document.getElementById('goalNext');
+    const capture = document.getElementById('capture');
+    const captureZone = document.getElementById('captureZone');
+    const expenseMeta = document.getElementById('expenseMeta');
+    const personalCopy = document.getElementById('personalCopy');
+    const paywallNote = document.getElementById('paywallNote');
+    const toast = document.getElementById('toast');
+    let current = 0;
+    let toastTimer;
+
+    const copy = {
+      where: ['Your home view will start with where your money goes.', 'See where your money has been going, without logging every purchase.'],
+      intentional: ['Your home view will start with what remains inside your category limits.', "Know what's left without checking a spreadsheet."],
+      change: ['Your home view will start with categories that are beginning to move.', 'Notice when a category starts to change.'],
+      recent: ['Your home view will start with your latest captured expenses.', 'Keep recent spending close at hand.']
+    };
+
+    screens.forEach((_, index) => {
+      const step = document.createElement('span');
+      step.className = 'step';
+      step.setAttribute('aria-hidden', 'true');
+      steps.appendChild(step);
+    });
+
+    function showScreen(index) {
+      if (index < 0 || index >= screens.length) return;
+      screens[current].classList.remove('is-active');
+      current = index;
+      screens[current].classList.add('is-active');
+      back.classList.toggle('is-visible', current > 0);
+      [...steps.children].forEach((step, i) => step.classList.toggle('is-current', i === current));
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+
+    function showToast(message) {
+      clearTimeout(toastTimer);
+      toast.textContent = message;
+      toast.classList.add('is-visible');
+      toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2400);
+    }
+
+    document.querySelectorAll('[data-next]').forEach(button => button.addEventListener('click', () => showScreen(current + 1)));
+    document.querySelectorAll('[data-toast]').forEach(button => button.addEventListener('click', () => showToast(button.dataset.toast)));
+    back.addEventListener('click', () => showScreen(current - 1));
+
+    document.getElementById('goals').addEventListener('click', event => {
+      const choice = event.target.closest('[data-goal]');
+      if (!choice) return;
+      document.querySelectorAll('[data-goal]').forEach(item => item.setAttribute('aria-pressed', 'false'));
+      choice.setAttribute('aria-pressed', 'true');
+      const selected = copy[choice.dataset.goal];
+      personalCopy.textContent = selected[0];
+      paywallNote.textContent = selected[1];
+      goalNext.disabled = false;
+    });
+
+    capture.addEventListener('click', () => {
+      captureZone.classList.add('is-done');
+      capture.textContent = 'Kept';
+      capture.disabled = true;
+      setTimeout(() => showScreen(3), 760);
+    });
+
+    document.getElementById('categories').addEventListener('click', event => {
+      const category = event.target.closest('.category');
+      if (!category) return;
+      document.querySelectorAll('.category').forEach(item => item.setAttribute('aria-pressed', 'false'));
+      category.setAttribute('aria-pressed', 'true');
+      expenseMeta.textContent = `${category.textContent} / Today`;
+      document.getElementById('correctTitle').textContent = `Does ${category.textContent} look right?`;
+    });
+
+    document.getElementById('trial').addEventListener('click', () => showScreen(6));
+    showScreen(0);
+  </script>
+</body>
+</html>

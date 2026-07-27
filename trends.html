@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f2ec">
+  <title>Nagi / Trends</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--paper:#f4f2ec;--white:#fbfaf6;--ink:#2a2a28;--muted:#77766f;--faint:#a3a199;--line:#d8d5cc;--accent:#814543;--accent-pale:#dce7e5}
+    *{box-sizing:border-box} html,body{min-height:100%}
+    body{margin:0;background:#dfdcd4;color:var(--ink);font-family:"Inter Tight",sans-serif;font-weight:400;-webkit-font-smoothing:antialiased}
+    button{font:inherit;color:inherit}
+    .app{position:relative;width:100%;max-width:430px;min-height:100svh;margin:0 auto;overflow:hidden;background:var(--paper)}
+    .content{min-height:100svh;padding:calc(28px + env(safe-area-inset-top)) 28px calc(106px + env(safe-area-inset-bottom));animation:settle 620ms cubic-bezier(.22,.72,.2,1) both}
+    @keyframes settle{from{opacity:0;transform:translate3d(0,5px,0)}to{opacity:1;transform:none}}
+    .brand-row,.brand,.range,.row,.nav,.chart-labels{display:flex;align-items:center;justify-content:space-between}
+    .brand{justify-content:flex-start;gap:9px;color:var(--muted);font-size:11px;letter-spacing:.16em;text-transform:uppercase}
+    .square{width:6px;height:6px;background:var(--accent)}
+    .sample-tag{color:var(--faint);font-size:9px;letter-spacing:.08em}
+    .eyebrow{margin:72px 0 12px;color:var(--muted);font-size:10px;letter-spacing:.08em}
+    h1,h2,h3,p{margin-top:0} h1{margin-bottom:0;font-size:38px;font-weight:400;letter-spacing:-.03em;line-height:1.04}
+    .range{margin-top:38px;border-bottom:1px solid var(--line)}
+    .range button{position:relative;min-height:45px;padding:0 4px;border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:11px}
+    .range button.active{color:var(--accent)}
+    .range button.active::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:var(--accent);animation:lineIn 320ms ease both}
+    @keyframes lineIn{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+    .hero{margin-top:52px}
+    .hero-total{font-size:48px;font-variant-numeric:tabular-nums;letter-spacing:-.035em;line-height:1}
+    .hero-context{margin-top:10px;color:var(--muted);font-size:12px}
+    .comparison{display:flex;align-items:center;gap:9px;margin-top:20px;color:var(--accent);font-size:12px}
+    .comparison .marker{width:5px;height:5px;background:currentColor;transition:transform 360ms ease}
+    .chart{height:170px;margin-top:46px;padding-top:12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .bars{height:126px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+    .bar-button{height:100%;flex:1;display:flex;align-items:flex-end;justify-content:center;padding:0;border:0;background:transparent;cursor:pointer}
+    .bar{width:2px;min-height:8px;background:var(--faint);transform-origin:bottom;animation:barGrow 650ms cubic-bezier(.22,.72,.2,1) both;transition:width 180ms ease,background-color 180ms ease}
+    .bar-button.selected .bar{width:5px;background:var(--accent)}
+    @keyframes barGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+    .chart-labels{height:31px;color:var(--faint);font-size:9px}
+    .chart-labels span{flex:1;text-align:center}
+    .chart-readout{margin-top:14px;color:var(--muted);font-size:10px;text-align:center;min-height:14px}
+    .insight{position:relative;margin-top:50px;padding:24px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .insight-label{margin-bottom:11px;color:var(--accent);font-size:10px;letter-spacing:.07em}
+    .insight-copy{max-width:330px;margin:0;color:var(--ink);font-size:16px;line-height:1.5}
+    .rest-track{position:relative;height:1px;margin-top:28px;background:var(--line)}
+    .rest-track span{position:absolute;top:-2px;width:5px;height:5px;background:var(--accent);animation:rest 2.8s cubic-bezier(.4,0,.2,1) both}
+    @keyframes rest{from{left:0}to{left:calc(100% - 5px)}}
+    .section{margin-top:50px}
+    .section-head{margin-bottom:14px;color:var(--muted);font-size:10px;letter-spacing:.07em}
+    .row{min-height:52px;border-bottom:1px solid var(--line);gap:18px}
+    .row:first-of-type{border-top:1px solid var(--line)}
+    .row-name{font-size:13px}.row-detail{margin-top:3px;color:var(--muted);font-size:10px}
+    .row-value{text-align:right;font-variant-numeric:tabular-nums;font-size:13px}
+    .delta{display:block;margin-top:3px;color:var(--accent);font-size:10px}.delta.down{color:var(--muted)}
+
+    /* Category split bar */
+    .split-section{margin-top:50px}
+    .split-bar{display:flex;height:24px;margin-top:14px;border:1px solid var(--line)}
+    .split-segment{height:100%;transition:width 500ms cubic-bezier(.22,.72,.2,1)}
+    .split-legend{margin-top:16px}
+    .legend-row{display:flex;align-items:center;gap:10px;min-height:42px;border-bottom:1px solid var(--line);font-size:12px}
+    .legend-row:first-child{border-top:1px solid var(--line)}
+    .legend-dot{flex:0 0 auto;width:8px;height:8px}
+    .legend-name{flex:1;min-width:0}
+    .legend-share{flex:0 0 auto;font-variant-numeric:tabular-nums;color:var(--ink);font-size:12px}
+    .legend-delta{flex:0 0 auto;width:52px;text-align:right;font-variant-numeric:tabular-nums;font-size:10px;color:var(--accent)}
+    .legend-delta.none{color:var(--faint)}
+
+    .nav{position:absolute;z-index:10;left:0;right:0;bottom:0;min-height:72px;padding:12px 28px max(12px,env(safe-area-inset-bottom));border-top:1px solid var(--line);background:color-mix(in srgb,var(--paper) 94%,transparent);backdrop-filter:blur(10px)}
+    .nav button{min-width:76px;min-height:44px;border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:11px}.nav button.active{color:var(--accent)}
+    .toast{position:fixed;z-index:30;left:50%;bottom:88px;max-width:340px;padding:10px 14px;border:1px solid var(--line);background:var(--ink);color:var(--paper);font-size:11px;opacity:0;pointer-events:none;transform:translateX(-50%);transition:opacity 220ms ease}.toast.show{opacity:1}
+    button:focus-visible{outline:1px solid var(--accent);outline-offset:3px}
+    @media(min-width:700px){body{padding:28px 0}.app,.content{min-height:900px}.app{border:1px solid #cfccc4}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.content{opacity:1;transform:none}}
+  </style>
+</head>
+<body>
+  <main class="app" aria-label="Nagi Trends prototype">
+    <div class="content">
+      <div class="brand-row"><div class="brand"><span class="square"></span><span>Nagi</span></div><span class="sample-tag">Sample data</span></div>
+      <p class="eyebrow">Spending</p>
+      <h1>Trends</h1>
+      <div class="range" role="tablist" aria-label="Trend period">
+        <button class="active" type="button" role="tab" aria-selected="true" data-range="month">Month</button>
+        <button type="button" role="tab" aria-selected="false" data-range="three">3 months</button>
+        <button type="button" role="tab" aria-selected="false" data-range="year">Year</button>
+        <button type="button" role="tab" aria-selected="false" data-range="all">All</button>
+      </div>
+      <section class="hero" aria-live="polite">
+        <div class="hero-total" id="total">$3,247</div>
+        <div class="hero-context" id="context">spent in July</div>
+        <div class="comparison"><span class="marker"></span><span id="comparison">$263 more than June</span></div>
+      </section>
+      <section class="chart" aria-label="Spending over time">
+        <div class="bars" id="bars"></div>
+        <div class="chart-labels" id="labels"></div>
+      </section>
+      <div class="chart-readout" id="chartReadout" aria-live="polite">July / $3,247</div>
+      <section class="insight" aria-labelledby="changeLabel">
+        <div class="insight-label" id="changeLabel">What changed</div>
+        <p class="insight-copy" id="insight">Shopping rose by $142. It explains just over half of July's increase.</p>
+        <div class="rest-track" aria-hidden="true"><span></span></div>
+      </section>
+      <section class="section" aria-labelledby="movementLabel">
+        <div class="section-head" id="movementLabel">Category movement</div>
+        <div id="movement"></div>
+      </section>
+      <section class="split-section" aria-labelledby="splitLabel">
+        <div class="section-head" id="splitLabel">Where it went</div>
+        <div class="split-bar" id="splitBar"></div>
+        <div class="split-legend" id="splitLegend"></div>
+      </section>
+    </div>
+    <nav class="nav" aria-label="Primary navigation">
+      <button id="goToday" type="button">Today</button>
+      <button class="active" type="button">Trends</button>
+      <button id="goSettings" type="button">Settings</button>
+    </nav>
+  </main>
+  <div class="toast" id="toast" role="status"></div>
+  <script>
+    const sets={
+      month:{
+        total:'$3,247',context:'spent in July',comparison:'$263 more than June',
+        labels:['Jan','Feb','Mar','Apr','May','Jun','Jul'],values:[3000,2920,3044,2832,3128,2984,3247],
+        insight:'Shopping rose by $142. It explains just over half of July\u2019s increase.',
+        movement:[['Shopping','$612','+$142'],['Other','$400','+$56'],['Food','$842','+$52'],['Transport','$385','+$45'],['Bills','$1,008','\u2212$32']],
+        split:[
+          ['Bills',31.0,-3.8,'#814543'],
+          ['Food',25.9,-0.5,'#9a605d'],
+          ['Shopping',18.8,3.1,'#b08a87'],
+          ['Other',12.3,0.8,'#c7ada9'],
+          ['Transport',11.9,0.5,'#dccac6']
+        ]
+      },
+      three:{
+        total:'$9,359',context:'spent from May to July',comparison:'$563 more than the previous 3 months',
+        labels:['Feb\u2013Apr','May\u2013Jul'],values:[8796,9359],
+        insight:'Shopping rose by $210 across the period. Food followed, up by $190.',
+        movement:[['Shopping','$1,670','+$210'],['Food','$2,480','+$190'],['Transport','$1,080','+$80'],['Other','$1,029','+$48'],['Bills','$3,100','+$35']],
+        split:[
+          ['Bills',33.0,-2.5,'#814543'],
+          ['Food',25.9,0.3,'#9a605d'],
+          ['Shopping',16.6,2.9,'#b08a87'],
+          ['Other',13.2,-1.7,'#c7ada9'],
+          ['Transport',11.4,0.9,'#dccac6']
+        ]
+      },
+      year:{
+        total:'$21,155',context:'spent from January to July',comparison:'Average $3,022 a month',
+        labels:['Jan','Feb','Mar','Apr','May','Jun','Jul'],values:[3000,2920,3044,2832,3128,2984,3247],
+        insight:'Bills and food make up the largest shares of spending so far this year.',
+        movement:[['Bills','$7,248','34% of spending'],['Food','$5,432','26% of spending'],['Shopping','$3,162','15% of spending'],['Other','$3,018','14% of spending'],['Transport','$2,295','11% of spending']],
+        split:[
+          ['Bills',34.3,null,'#814543'],
+          ['Food',25.7,null,'#9a605d'],
+          ['Shopping',14.9,null,'#b08a87'],
+          ['Other',14.3,null,'#c7ada9'],
+          ['Transport',10.8,null,'#dccac6']
+        ]
+      },
+      all:{
+        total:'$37,460',context:'spent in all of 2025',comparison:'On pace for $36,300 this year, about 3% less',
+        labels:['2025','2026 YTD'],values:[37460,21155],
+        insight:'Spending has been stable year over year. Bills and food remain the two largest categories.',
+        movement:[['Bills','$12,480','33% of 2025'],['Food','$9,400','25% of 2025'],['Shopping','$5,600','15% of 2025'],['Other','$5,200','14% of 2025'],['Transport','$4,780','13% of 2025']],
+        split:[
+          ['Bills',33.3,null,'#814543'],
+          ['Food',25.1,null,'#9a605d'],
+          ['Shopping',15.0,null,'#b08a87'],
+          ['Other',13.9,null,'#c7ada9'],
+          ['Transport',12.7,null,'#dccac6']
+        ]
+      }
+    };
+    const total=document.getElementById('total'),context=document.getElementById('context'),comparison=document.getElementById('comparison'),bars=document.getElementById('bars'),labels=document.getElementById('labels'),insight=document.getElementById('insight'),movement=document.getElementById('movement'),readout=document.getElementById('chartReadout'),splitBar=document.getElementById('splitBar'),splitLegend=document.getElementById('splitLegend');
+    let activeRange='month',toastTimer;
+    function money(value){return '$'+value.toLocaleString('en-US')}
+    function render(key){
+      activeRange=key;const set=sets[key];total.textContent=set.total;context.textContent=set.context;comparison.textContent=set.comparison;insight.textContent=set.insight;
+      document.querySelectorAll('[data-range]').forEach(button=>{const on=button.dataset.range===key;button.classList.toggle('active',on);button.setAttribute('aria-selected',String(on))});
+      bars.innerHTML='';labels.innerHTML='';const max=Math.max(...set.values),min=Math.min(...set.values);const floor=min*.82;
+      set.values.forEach((value,index)=>{
+        const isLast=index===set.values.length-1;const isSelected=key==='all'?true:isLast;
+        const button=document.createElement('button');button.type='button';button.className='bar-button'+(isSelected?' selected':'');button.setAttribute('aria-label',`${set.labels[index]} ${money(value)}`);
+        const bar=document.createElement('span');bar.className='bar';bar.style.height=`${28+((value-floor)/(max-floor))*72}%`;bar.style.animationDelay=`${index*55}ms`;button.appendChild(bar);
+        button.addEventListener('click',()=>{document.querySelectorAll('.bar-button').forEach(item=>item.classList.remove('selected'));button.classList.add('selected');readout.textContent=`${set.labels[index]} / ${money(value)}`});bars.appendChild(button);
+        const label=document.createElement('span');label.textContent=set.labels[index];labels.appendChild(label);
+      });
+      readout.textContent=`${set.labels[set.labels.length-1]} / ${money(set.values[set.values.length-1])}`;
+      movement.innerHTML='';set.movement.forEach(([name,value,delta])=>{const row=document.createElement('div');row.className='row';row.innerHTML='<div><div class="row-name"></div><div class="row-detail"></div></div><div class="row-value"></div>';row.querySelector('.row-name').textContent=name;row.querySelector('.row-detail').textContent=(key==='year'||key==='all')?'Full period':'Compared with the prior period';row.querySelector('.row-value').textContent=value;const d=document.createElement('span');d.className='delta'+(delta.startsWith('\u2212')?' down':'');d.textContent=delta;row.querySelector('.row-value').appendChild(d);movement.appendChild(row)});
+      splitBar.innerHTML='';splitLegend.innerHTML='';
+      set.split.forEach(([name,share,delta,color])=>{
+        const seg=document.createElement('div');seg.className='split-segment';seg.style.background=color;seg.style.width='0%';splitBar.appendChild(seg);requestAnimationFrame(()=>{seg.style.width=share+'%'});
+        const lr=document.createElement('div');lr.className='legend-row';
+        lr.innerHTML='<span class="legend-dot"></span><span class="legend-name"></span><span class="legend-share"></span><span class="legend-delta"></span>';
+        lr.querySelector('.legend-dot').style.background=color;
+        lr.querySelector('.legend-name').textContent=name;
+        lr.querySelector('.legend-share').textContent=share.toFixed(1)+'%';
+        const dd=lr.querySelector('.legend-delta');
+        if(delta===null){dd.textContent='\u2014';dd.classList.add('none')}
+        else{const sign=delta>0?'+':'';dd.textContent=sign+delta.toFixed(1)+'pp';if(delta<0)dd.classList.add('down')}
+        splitLegend.appendChild(lr);
+      });
+    }
+    function showToast(message){clearTimeout(toastTimer);const toast=document.getElementById('toast');toast.textContent=message;toast.classList.add('show');toastTimer=setTimeout(()=>toast.classList.remove('show'),2200)}
+    document.querySelectorAll('[data-range]').forEach(button=>button.addEventListener('click',()=>render(button.dataset.range)));
+    document.getElementById('goToday').addEventListener('click',()=>location.href='app.html');
+    document.getElementById('goSettings').addEventListener('click',()=>location.href='settings.html');
+    render('month');
+  </script>
+</body>
+</html>

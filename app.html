@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f2ec">
+  <title>Nagi / Today and review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper:#f4f2ec;
+      --surface:#ebe8df;
+      --white:#fbfaf6;
+      --ink:#2a2a28;
+      --muted:#77766f;
+      --faint:#a3a199;
+      --line:#d8d5cc;
+      --accent:#814543;
+      --accent-pale:#e6d6d4;
+      --danger:#81524a;
+    }
+    * { box-sizing:border-box; }
+    html,body { min-height:100%; }
+    body {
+      margin:0;
+      background:#dfdcd4;
+      color:var(--ink);
+      font-family:"Inter Tight",sans-serif;
+      font-weight:400;
+      -webkit-font-smoothing:antialiased;
+    }
+    button,input,select { font:inherit; }
+    button { color:inherit; }
+    .app {
+      position:relative;
+      width:100%;
+      max-width:430px;
+      min-height:100svh;
+      margin:0 auto;
+      overflow:hidden;
+      background:var(--paper);
+    }
+    .view {
+      display:none;
+      min-height:100svh;
+      padding:calc(28px + env(safe-area-inset-top)) 28px calc(94px + env(safe-area-inset-bottom));
+      opacity:0;
+      transform:translate3d(0,5px,0);
+    }
+    .view.active {
+      display:block;
+      animation:viewSettle 600ms cubic-bezier(.22,.72,.2,1) forwards;
+    }
+    @keyframes viewSettle { to { opacity:1; transform:translate3d(0,0,0); } }
+    .brand-row,.review-head,.row,.nav,.field-row,.sheet-head {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .brand {
+      display:flex;
+      align-items:center;
+      gap:9px;
+      color:var(--muted);
+      font-size:11px;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+    }
+    .square { width:6px; height:6px; background:var(--accent); }
+    .sample-tag { color:var(--faint); font-size:9px; letter-spacing:.08em; }
+    .eyebrow { margin:72px 0 12px; color:var(--muted); font-size:10px; letter-spacing:.08em; }
+    h1,h2,h3,p { margin-top:0; }
+    h1 { margin-bottom:0; font-size:38px; font-weight:400; letter-spacing:-.03em; line-height:1.04; }
+    h2 { margin-bottom:0; font-size:30px; font-weight:400; letter-spacing:-.025em; line-height:1.08; }
+    h3 { margin-bottom:0; font-size:16px; font-weight:400; }
+    .month-total { margin-top:7px; color:var(--muted); font-size:12px; }
+    .review-entry {
+      width:100%;
+      display:grid;
+      grid-template-columns:8px 1fr auto;
+      align-items:center;
+      gap:14px;
+      margin-top:48px;
+      padding:17px 0;
+      border:0;
+      border-top:1px solid var(--line);
+      border-bottom:1px solid var(--line);
+      background:transparent;
+      text-align:left;
+      cursor:pointer;
+    }
+    .review-entry .pulse {
+      width:6px;
+      height:6px;
+      background:var(--accent);
+      animation:pulse 3.8s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity:.35; transform:scale(.72); } 46% { opacity:1; transform:scale(1); } }
+    .review-title { display:block; font-size:14px; }
+    .review-copy { display:block; margin-top:3px; color:var(--muted); font-size:11px; }
+    .review-count { color:var(--accent); font-size:11px; }
+
+    .section { margin-top:46px; }
+    .section-label { margin-bottom:14px; color:var(--muted); font-size:10px; letter-spacing:.07em; }
+    .row {
+      min-height:45px;
+      border-bottom:1px solid var(--line);
+      font-size:13px;
+    }
+    .row:first-of-type { border-top:1px solid var(--line); }
+    .row-copy { min-width:0; }
+    .row-name { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .row-meta { display:block; margin-top:3px; color:var(--muted); font-size:10px; }
+    .amount { flex:0 0 auto; margin-left:16px; font-variant-numeric:tabular-nums; }
+    .tx-row {
+      width:100%;
+      padding:0;
+      border:0;
+      border-bottom:1px solid var(--line);
+      border-top:1px solid var(--line) !important;
+      background:transparent;
+      text-align:left;
+      cursor:pointer;
+      transition:color 160ms ease;
+    }
+    .tx-row:active .row-name { color:var(--accent); }
+    .cat-btn {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      width:100%;
+      min-height:45px;
+      padding:0;
+      border:0;
+      border-bottom:1px solid var(--line);
+      background:transparent;
+      color:inherit;
+      font-size:13px;
+      cursor:pointer;
+      transition:color 160ms ease;
+    }
+    .cat-btn:first-of-type { border-top:1px solid var(--line); }
+    .cat-btn:active { color:var(--accent); }
+    .manual-link {
+      display:block;
+      margin:24px 0 0 auto;
+      padding:0 0 3px;
+      border:0;
+      border-bottom:1px solid var(--accent);
+      background:transparent;
+      color:var(--accent);
+      cursor:pointer;
+      font-size:11px;
+    }
+    .nav {
+      position:absolute;
+      z-index:10;
+      left:0;
+      right:0;
+      bottom:0;
+      min-height:72px;
+      padding:12px 28px max(12px,env(safe-area-inset-bottom));
+      border-top:1px solid var(--line);
+      background:color-mix(in srgb,var(--paper) 94%,transparent);
+      backdrop-filter:blur(10px);
+    }
+    .nav button {
+      min-width:76px;
+      min-height:44px;
+      border:0;
+      background:transparent;
+      color:var(--muted);
+      cursor:pointer;
+      font-size:11px;
+    }
+    .nav button.active { color:var(--accent); }
+    .back {
+      min-height:44px;
+      padding:0;
+      border:0;
+      background:transparent;
+      color:var(--muted);
+      cursor:pointer;
+      font-size:11px;
+    }
+    .review-position { color:var(--faint); font-size:10px; }
+    .review-progress { display:flex; gap:5px; margin:20px 0 58px; }
+    .review-progress span { height:2px; flex:1; background:var(--line); transition:background-color 360ms ease; }
+    .review-progress span.done,.review-progress span.current { background:var(--accent); }
+    .notification {
+      margin-top:34px;
+      padding:15px 16px;
+      border:1px solid var(--line);
+      border-radius:2px;
+      background:var(--white);
+      animation:notificationSettle 650ms 160ms cubic-bezier(.22,.72,.2,1) both;
+    }
+    @keyframes notificationSettle {
+      from { opacity:0; transform:translate3d(0,-8px,0); }
+      to { opacity:1; transform:translate3d(0,0,0); }
+    }
+    .notification-top { display:flex; justify-content:space-between; color:var(--faint); font-size:9px; }
+    .notification-main { margin-top:9px; font-size:13px; }
+    .notification-sub { margin-top:3px; color:var(--muted); font-size:11px; }
+    .reason { margin-top:18px; color:var(--muted); font-size:11px; }
+    .fields { margin-top:42px; border-top:1px solid var(--line); }
+    .field-row { min-height:62px; border-bottom:1px solid var(--line); gap:18px; }
+    .field-row label { color:var(--muted); font-size:11px; }
+    .field-row input {
+      min-width:0;
+      width:66%;
+      padding:14px 0;
+      border:0;
+      outline:0;
+      background:transparent;
+      color:var(--ink);
+      text-align:right;
+    }
+    .field-row input:focus { color:var(--accent); }
+    .category-label { margin:30px 0 12px; color:var(--muted); font-size:11px; }
+    .categories { display:flex; gap:8px; overflow-x:auto; padding-bottom:7px; scrollbar-width:none; }
+    .categories::-webkit-scrollbar { display:none; }
+    .category {
+      min-height:40px;
+      padding:0 11px;
+      border:1px solid var(--line);
+      border-radius:2px;
+      background:transparent;
+      color:var(--muted);
+      white-space:nowrap;
+      cursor:pointer;
+      font-size:12px;
+      transition:background-color 220ms ease,color 220ms ease,border-color 220ms ease;
+    }
+    .category[aria-pressed="true"] { border-color:var(--accent); background:var(--accent-pale); color:var(--accent); }
+    details { margin-top:28px; border-bottom:1px solid var(--line); }
+    summary { min-height:46px; display:flex; align-items:center; color:var(--muted); cursor:pointer; font-size:11px; list-style:none; }
+    summary::-webkit-details-marker { display:none; }
+    .source-copy { padding:0 0 18px; color:var(--faint); font-size:10px; line-height:1.55; }
+    .review-actions { margin-top:36px; }
+    .primary,.secondary {
+      width:100%;
+      min-height:54px;
+      border-radius:2px;
+      cursor:pointer;
+    }
+    .primary { border:1px solid var(--accent); background:var(--accent); color:var(--white); }
+    .secondary { margin-top:10px; border:1px solid var(--line); background:transparent; color:var(--muted); }
+    .primary:active,.secondary:active { transform:scale(.993); }
+    .save-motion {
+      position:fixed;
+      z-index:40;
+      width:6px;
+      height:6px;
+      border-radius:0;
+      background:var(--accent);
+      opacity:0;
+      pointer-events:none;
+    }
+    .save-motion.go { animation:saveAway 680ms cubic-bezier(.4,0,.2,1) forwards; }
+    @keyframes saveAway {
+      0% { opacity:1; transform:translate3d(0,0,0); }
+      72% { opacity:1; transform:translate3d(-132px,-210px,0); }
+      100% { opacity:0; transform:translate3d(-132px,-210px,0) scale(.55); }
+    }
+    .done-view { display:none; min-height:calc(100svh - 56px); flex-direction:column; justify-content:center; }
+    .still-line { position:relative; height:1px; margin:48px 0; background:var(--line); }
+    .still-square { position:absolute; top:-2px; width:5px; height:5px; background:var(--accent); animation:comeToRest 2.4s cubic-bezier(.4,0,.2,1) forwards; }
+    @keyframes comeToRest { from { left:0; } to { left:calc(100% - 5px); } }
+    .done-copy { color:var(--muted); font-size:14px; line-height:1.6; }
+    .replay {
+      margin-top:18px;
+      padding:0;
+      border:0;
+      background:transparent;
+      color:var(--muted);
+      text-decoration:underline;
+      text-underline-offset:4px;
+      cursor:pointer;
+      font-size:10px;
+    }
+    .sheet-backdrop {
+      position:fixed;
+      z-index:30;
+      inset:0;
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      background:rgba(42,42,40,.22);
+      backdrop-filter:blur(2px);
+    }
+    .sheet-backdrop.open { display:flex; }
+    .sheet {
+      width:100%;
+      max-width:430px;
+      max-height:85vh;
+      overflow-y:auto;
+      padding:24px 28px max(24px,env(safe-area-inset-bottom));
+      border-top:1px solid var(--line);
+      background:var(--paper);
+      animation:sheetIn 420ms cubic-bezier(.22,.72,.2,1) both;
+    }
+    @keyframes sheetIn { from { opacity:0; transform:translate3d(0,22px,0); } to { opacity:1; transform:translate3d(0,0,0); } }
+    .sheet-head { margin-bottom:24px; }
+    .sheet-close { min-height:40px; border:0; background:transparent; color:var(--muted); cursor:pointer; }
+    .sheet input,.sheet select {
+      width:100%;
+      min-height:52px;
+      margin-bottom:10px;
+      padding:0 12px;
+      border:1px solid var(--line);
+      border-radius:2px;
+      outline:0;
+      background:transparent;
+      color:var(--ink);
+    }
+    .detail-amount { font-size:28px; font-weight:400; letter-spacing:-.02em; margin-bottom:24px; }
+    .detail-list { border-top:1px solid var(--line); }
+    .detail-item {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      min-height:48px;
+      border-bottom:1px solid var(--line);
+    }
+    .detail-item dt { color:var(--muted); font-size:11px; margin:0; }
+    .detail-item dd { margin:0; font-size:13px; text-align:right; }
+    .cat-tx-list { border-top:1px solid var(--line); }
+    .cat-tx {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      min-height:45px;
+      border-bottom:1px solid var(--line);
+      font-size:13px;
+    }
+    .cat-tx-meta { display:block; margin-top:3px; color:var(--muted); font-size:10px; }
+    .toast {
+      position:fixed;
+      z-index:50;
+      left:50%;
+      bottom:88px;
+      max-width:340px;
+      padding:10px 14px;
+      border:1px solid var(--line);
+      background:var(--ink);
+      color:var(--paper);
+      font-size:11px;
+      opacity:0;
+      pointer-events:none;
+      transform:translateX(-50%);
+      transition:opacity 220ms ease;
+    }
+    .toast.show { opacity:1; }
+    button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible { outline:1px solid var(--accent); outline-offset:3px; }
+    @media (min-width:700px) { body { padding:28px 0; } .app { min-height:900px; border:1px solid #cfccc4; } .view { min-height:900px; } .nav { position:absolute; } }
+    @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; transition:none!important; } .view { opacity:1; transform:none; } }
+  </style>
+</head>
+<body>
+  <main class="app" aria-label="Nagi daily-use prototype">
+    <section class="view active" id="todayView" aria-labelledby="todayTitle">
+      <div class="brand-row">
+        <div class="brand"><span class="square"></span><span>Nagi</span></div>
+        <span class="sample-tag">Sample month</span>
+      </div>
+      <p class="eyebrow">July</p>
+      <h1 id="todayTitle"><span id="monthTotal">$3,247.00</span></h1>
+      <div class="month-total">spent this month</div>
+
+      <button class="review-entry" id="openReview" type="button">
+        <span class="pulse" id="reviewPulse"></span>
+        <span><span class="review-title" id="reviewTitle">Two captures need a glance</span><span class="review-copy" id="reviewCopy">Nagi was not certain enough to file them quietly.</span></span>
+        <span class="review-count" id="reviewCount">2</span>
+      </button>
+
+      <section class="section" aria-labelledby="whereLabel">
+        <div class="section-label" id="whereLabel">Where it went</div>
+        <button class="cat-btn" data-cat="Food" type="button"><span>Food</span><span class="amount">$842</span></button>
+        <button class="cat-btn" data-cat="Transport" type="button"><span>Transport</span><span class="amount">$385</span></button>
+        <button class="cat-btn" data-cat="Shopping" type="button"><span>Shopping</span><span class="amount">$612</span></button>
+        <button class="cat-btn" data-cat="Bills" type="button"><span>Bills</span><span class="amount">$1,008</span></button>
+      </section>
+
+      <section class="section" aria-labelledby="recentLabel">
+        <div class="section-label" id="recentLabel">Recent</div>
+        <div id="transactionList"></div>
+        <button class="manual-link" id="openManual" type="button">Add expense</button>
+      </section>
+      <button class="replay" id="replay" type="button" hidden>Replay the sample review</button>
+    </section>
+
+    <section class="view" id="reviewView" aria-labelledby="reviewHeading">
+      <div id="reviewForm">
+        <div class="review-head">
+          <button class="back" id="backToday" type="button">Back</button>
+          <span class="review-position" id="reviewPosition">Capture 1 of 2</span>
+        </div>
+        <div class="review-progress"><span id="progressOne" class="current"></span><span id="progressTwo"></span></div>
+        <p class="sample-tag">Sample capture</p>
+        <h2 id="reviewHeading">What should Nagi keep?</h2>
+        <div class="notification">
+          <div class="notification-top"><span id="sourceApp">DBS</span><span>just now</span></div>
+          <div class="notification-main" id="notificationMain">Card transaction</div>
+          <div class="notification-sub" id="notificationSub">SGD 18.40 at HARBOURFRONT CTR</div>
+        </div>
+        <div class="reason" id="reviewReason">The merchant name was unclear, so Nagi left this for you.</div>
+        <div class="fields">
+          <div class="field-row"><label for="merchant">Merchant</label><input id="merchant" value="HarbourFront Centre" autocomplete="off"></div>
+          <div class="field-row"><label for="amount">Amount</label><input id="amount" value="18.40" inputmode="decimal"></div>
+        </div>
+        <div class="category-label">Category</div>
+        <div class="categories" id="reviewCategories">
+          <button class="category" type="button" aria-pressed="true">Shopping</button>
+          <button class="category" type="button" aria-pressed="false">Dining</button>
+          <button class="category" type="button" aria-pressed="false">Transport</button>
+          <button class="category" type="button" aria-pressed="false">Bills</button>
+          <button class="category" type="button" aria-pressed="false">Other</button>
+        </div>
+        <details><summary>Original notification</summary><div class="source-copy" id="sourceCopy">DBS: Card transaction of SGD 18.40 at HARBOURFRONT CTR. This is sample content.</div></details>
+        <div class="review-actions">
+          <button class="primary" id="keepCapture" type="button">Keep expense</button>
+          <button class="secondary" id="discardCapture" type="button">This is not an expense</button>
+        </div>
+        <span class="save-motion" id="saveMotion"></span>
+      </div>
+      <div class="done-view" id="doneView">
+        <p class="sample-tag">Review complete</p>
+        <h2>All caught up.</h2>
+        <div class="still-line"><span class="still-square"></span></div>
+        <p class="done-copy">Nagi will keep working quietly. It will ask again only when a capture needs your judgment.</p>
+        <button class="primary" id="returnToday" type="button">Return to Today</button>
+      </div>
+    </section>
+
+    <nav class="nav" id="bottomNav" aria-label="Primary navigation">
+      <button class="active" type="button">Today</button>
+      <button id="goTrends" type="button">Trends</button>
+      <button id="goSettings" type="button">Settings</button>
+    </nav>
+  </main>
+
+  <div class="sheet-backdrop" id="manualSheet" role="dialog" aria-modal="true" aria-labelledby="manualTitle">
+    <form class="sheet" id="manualForm">
+      <div class="sheet-head"><h3 id="manualTitle">Add expense</h3><button class="sheet-close" id="closeManual" type="button">Close</button></div>
+      <input id="manualMerchant" aria-label="Merchant" placeholder="Merchant" required>
+      <input id="manualAmount" aria-label="Amount" placeholder="Amount" inputmode="decimal" required>
+      <select id="manualCategory" aria-label="Category"><option>Food</option><option>Transport</option><option>Shopping</option><option>Bills</option><option>Other</option></select>
+      <button class="primary" type="submit">Add to Today</button>
+    </form>
+  </div>
+
+  <div class="sheet-backdrop" id="detailSheet" role="dialog" aria-modal="true" aria-labelledby="detailMerchant">
+    <div class="sheet">
+      <div class="sheet-head"><h3 id="detailMerchant">Harbor Coffee</h3><button class="sheet-close" id="closeDetail" type="button">Close</button></div>
+      <div class="detail-amount" id="detailAmount">$4.80</div>
+      <dl class="detail-list">
+        <div class="detail-item"><dt>Category</dt><dd id="detailCategory">Food</dd></div>
+        <div class="detail-item"><dt>Date</dt><dd id="detailDate">Jul 26, 9:42 AM</dd></div>
+        <div class="detail-item"><dt>Payment method</dt><dd id="detailMethod">Card</dd></div>
+        <div class="detail-item"><dt>Captured from</dt><dd id="detailSource">DBS PayLah!</dd></div>
+        <div class="detail-item"><dt>Recorded by</dt><dd id="detailRecorded">Nagi (automatic)</dd></div>
+      </dl>
+    </div>
+  </div>
+
+  <div class="sheet-backdrop" id="catSheet" role="dialog" aria-modal="true" aria-labelledby="catTitle">
+    <div class="sheet">
+      <div class="sheet-head"><h3 id="catTitle">Food</h3><button class="sheet-close" id="closeCat" type="button">Close</button></div>
+      <div class="detail-amount" id="catTotal">$842</div>
+      <div class="cat-tx-list" id="catTxList"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    const captures = [
+      { source:'DBS', main:'Card transaction', sub:'SGD 18.40 at HARBOURFRONT CTR', reason:'The merchant name was unclear, so Nagi left this for you.', merchant:'HarbourFront Centre', amount:'18.40', category:'Shopping', original:'DBS: Card transaction of SGD 18.40 at HARBOURFRONT CTR. This is sample content.' },
+      { source:'SimplyGo', main:'Trip completed', sub:'SGD 2.10 charged for public transport', reason:'The amount was clear. Nagi is asking because this capture source is new.', merchant:'SimplyGo', amount:'2.10', category:'Transport', original:'SimplyGo: SGD 2.10 charged for public transport. This is sample content.' }
+    ];
+    const txData = [
+      { merchant:'Harbor Coffee', category:'Food', amount:4.80, date:'Jul 26, 9:42 AM', source:'DBS PayLah!', method:'Card', auto:true },
+      { merchant:'FairPrice', category:'Food', amount:62.35, date:'Jul 25, 6:18 PM', source:'OCBC Pay Anyone', method:'Card', auto:true },
+      { merchant:'Grab', category:'Transport', amount:14.50, date:'Jul 25, 11:20 PM', source:'SimplyGo', method:'Card', auto:true },
+      { merchant:'Netflix', category:'Bills', amount:15.98, date:'Jul 23, 2:00 AM', source:'DBS', method:'Recurring', auto:true },
+      { merchant:'Uniqlo', category:'Shopping', amount:49.90, date:'Jul 22, 3:30 PM', source:'OCBC', method:'PayNow', auto:true },
+      { merchant:'Spotify', category:'Bills', amount:11.98, date:'Jul 20, 2:00 AM', source:'DBS', method:'Recurring', auto:true },
+      { merchant:'Cold Storage', category:'Food', amount:38.20, date:'Jul 21, 5:45 PM', source:'DBS PayLah!', method:'Card', auto:true },
+      { merchant:'Comfort Taxi', category:'Transport', amount:22.30, date:'Jul 22, 11:45 PM', source:'SimplyGo', method:'Card', auto:true },
+    ];
+    const categoryTotals = { Food:'$842', Transport:'$385', Shopping:'$612', Bills:'$1,008' };
+    const todayView = document.getElementById('todayView');
+    const reviewView = document.getElementById('reviewView');
+    const bottomNav = document.getElementById('bottomNav');
+    const reviewForm = document.getElementById('reviewForm');
+    const doneView = document.getElementById('doneView');
+    const merchant = document.getElementById('merchant');
+    const amount = document.getElementById('amount');
+    const toast = document.getElementById('toast');
+    const transactionList = document.getElementById('transactionList');
+    let queueIndex = 0;
+    let selectedCategory = 'Shopping';
+    let monthTotal = 3247;
+    let toastTimer;
+
+    function show(view) {
+      [todayView, reviewView].forEach(item => item.classList.remove('active'));
+      view.classList.add('active');
+      bottomNav.style.display = view === todayView ? 'flex' : 'none';
+      window.scrollTo({top:0,behavior:'auto'});
+    }
+    function showToast(message) {
+      clearTimeout(toastTimer);
+      toast.textContent = message;
+      toast.classList.add('show');
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+    function setCategory(name) {
+      selectedCategory = name;
+      document.querySelectorAll('#reviewCategories .category').forEach(button => button.setAttribute('aria-pressed', String(button.textContent === name)));
+    }
+    function loadCapture(index) {
+      const item = captures[index];
+      document.getElementById('reviewPosition').textContent = `Capture ${index + 1} of ${captures.length}`;
+      document.getElementById('sourceApp').textContent = item.source;
+      document.getElementById('notificationMain').textContent = item.main;
+      document.getElementById('notificationSub').textContent = item.sub;
+      document.getElementById('reviewReason').textContent = item.reason;
+      document.getElementById('sourceCopy').textContent = item.original;
+      merchant.value = item.merchant;
+      amount.value = item.amount;
+      setCategory(item.category);
+      document.getElementById('progressOne').className = index > 0 ? 'done' : 'current';
+      document.getElementById('progressTwo').className = index > 0 ? 'current' : '';
+    }
+
+    function renderRecent() {
+      transactionList.innerHTML = '';
+      txData.slice(0, 3).forEach((tx, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'row tx-row';
+        btn.type = 'button';
+        btn.dataset.idx = i;
+        btn.innerHTML = `<span class="row-copy"><span class="row-name"></span><span class="row-meta"></span></span><span class="amount"></span>`;
+        btn.querySelector('.row-name').textContent = tx.merchant;
+        btn.querySelector('.row-meta').textContent = tx.category;
+        btn.querySelector('.amount').textContent = `$${tx.amount.toFixed(2)}`;
+        transactionList.appendChild(btn);
+      });
+    }
+    function openDetail(idx) {
+      const tx = txData[idx];
+      document.getElementById('detailMerchant').textContent = tx.merchant;
+      document.getElementById('detailAmount').textContent = `$${tx.amount.toFixed(2)}`;
+      document.getElementById('detailCategory').textContent = tx.category;
+      document.getElementById('detailDate').textContent = tx.date;
+      document.getElementById('detailMethod').textContent = tx.method;
+      document.getElementById('detailSource').textContent = tx.source;
+      document.getElementById('detailRecorded').textContent = tx.auto ? 'Nagi (automatic)' : 'You (manual)';
+      document.getElementById('detailSheet').classList.add('open');
+    }
+    function openCategory(cat) {
+      document.getElementById('catTitle').textContent = cat;
+      document.getElementById('catTotal').textContent = categoryTotals[cat] || '';
+      const list = document.getElementById('catTxList');
+      list.innerHTML = '';
+      txData.filter(tx => tx.category === cat).forEach(tx => {
+        const row = document.createElement('div');
+        row.className = 'cat-tx';
+        row.innerHTML = `<span><span></span><span class="cat-tx-meta"></span></span><span class="amount"></span>`;
+        row.querySelector('span:first-child span:first-child').textContent = tx.merchant;
+        row.querySelector('.cat-tx-meta').textContent = tx.date;
+        row.querySelector('.amount').textContent = `$${tx.amount.toFixed(2)}`;
+        list.appendChild(row);
+      });
+      document.getElementById('catSheet').classList.add('open');
+    }
+    function addTransaction(name, value, category, source) {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('en-SG',{month:'short',day:'numeric'}) + ', ' + now.toLocaleTimeString('en-SG',{hour:'numeric',minute:'2-digit'});
+      const tx = { merchant:name, category, amount:Number(value), date:dateStr, source:'Manual entry', method:'Manual', auto:false };
+      txData.unshift(tx);
+      renderRecent();
+    }
+    function advance(keep) {
+      if (keep) {
+        addTransaction(merchant.value.trim() || 'Unknown merchant', amount.value, selectedCategory, 'Reviewed');
+        const dot = document.getElementById('saveMotion');
+        const button = document.getElementById('keepCapture');
+        const rect = button.getBoundingClientRect();
+        dot.style.left = `${rect.left + rect.width / 2}px`;
+        dot.style.top = `${rect.top + rect.height / 2}px`;
+        dot.classList.remove('go');
+        void dot.offsetWidth;
+        dot.classList.add('go');
+      }
+      queueIndex += 1;
+      if (queueIndex < captures.length) {
+        setTimeout(() => loadCapture(queueIndex), keep ? 700 : 180);
+      } else {
+        setTimeout(() => {
+          reviewForm.style.display = 'none';
+          doneView.style.display = 'flex';
+        }, keep ? 700 : 180);
+      }
+    }
+    function finishReview() {
+      document.getElementById('reviewTitle').textContent = 'Everything has been reviewed';
+      document.getElementById('reviewCopy').textContent = 'Nagi has nothing waiting for you.';
+      document.getElementById('reviewCount').textContent = '0';
+      document.getElementById('reviewPulse').style.opacity = '.18';
+      document.getElementById('openReview').disabled = true;
+      document.getElementById('replay').hidden = false;
+      show(todayView);
+    }
+    function resetReview() {
+      queueIndex = 0;
+      reviewForm.style.display = 'block';
+      doneView.style.display = 'none';
+      document.getElementById('reviewTitle').textContent = 'Two captures need a glance';
+      document.getElementById('reviewCopy').textContent = 'Nagi was not certain enough to file them quietly.';
+      document.getElementById('reviewCount').textContent = '2';
+      document.getElementById('reviewPulse').style.opacity = '';
+      document.getElementById('openReview').disabled = false;
+      document.getElementById('replay').hidden = true;
+      loadCapture(0);
+      show(reviewView);
+    }
+
+    renderRecent();
+
+    document.getElementById('openReview').addEventListener('click', () => { loadCapture(queueIndex); show(reviewView); });
+    document.getElementById('backToday').addEventListener('click', () => show(todayView));
+    document.getElementById('reviewCategories').addEventListener('click', event => { const button = event.target.closest('.category'); if (button) setCategory(button.textContent); });
+    document.getElementById('keepCapture').addEventListener('click', () => advance(true));
+    document.getElementById('discardCapture').addEventListener('click', () => advance(false));
+    document.getElementById('returnToday').addEventListener('click', finishReview);
+    document.getElementById('replay').addEventListener('click', resetReview);
+    document.getElementById('goTrends').addEventListener('click', () => { location.href = 'trends.html'; });
+    document.getElementById('goSettings').addEventListener('click', () => { location.href = 'settings.html'; });
+
+    transactionList.addEventListener('click', event => {
+      const row = event.target.closest('.tx-row');
+      if (row) openDetail(Number(row.dataset.idx));
+    });
+    document.querySelector('[aria-labelledby="whereLabel"]').addEventListener('click', event => {
+      const btn = event.target.closest('.cat-btn');
+      if (btn) openCategory(btn.dataset.cat);
+    });
+    const detailSheet = document.getElementById('detailSheet');
+    document.getElementById('closeDetail').addEventListener('click', () => detailSheet.classList.remove('open'));
+    detailSheet.addEventListener('click', event => { if (event.target === detailSheet) detailSheet.classList.remove('open'); });
+    const catSheet = document.getElementById('catSheet');
+    document.getElementById('closeCat').addEventListener('click', () => catSheet.classList.remove('open'));
+    catSheet.addEventListener('click', event => { if (event.target === catSheet) catSheet.classList.remove('open'); });
+
+    const manualSheet = document.getElementById('manualSheet');
+    document.getElementById('openManual').addEventListener('click', () => { manualSheet.classList.add('open'); document.getElementById('manualMerchant').focus(); });
+    document.getElementById('closeManual').addEventListener('click', () => manualSheet.classList.remove('open'));
+    manualSheet.addEventListener('click', event => { if (event.target === manualSheet) manualSheet.classList.remove('open'); });
+    document.getElementById('manualForm').addEventListener('submit', event => {
+      event.preventDefault();
+      const name = document.getElementById('manualMerchant').value.trim();
+      const value = Number(document.getElementById('manualAmount').value);
+      const category = document.getElementById('manualCategory').value;
+      if (!name || !Number.isFinite(value) || value <= 0) { showToast('Add a merchant and a valid amount.'); return; }
+      addTransaction(name, value, category, 'Manual');
+      monthTotal += value;
+      document.getElementById('monthTotal').textContent = `$${monthTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+      event.target.reset();
+      manualSheet.classList.remove('open');
+      showToast('Added to Today');
+    });
+  </script>
+</body>
+</html>

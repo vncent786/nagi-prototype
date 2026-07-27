@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f2ec">
+  <title>Nagi / Settings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--paper:#f4f2ec;--white:#fbfaf6;--ink:#2a2a28;--muted:#77766f;--faint:#a3a199;--line:#d8d5cc;--accent:#814543;--accent-pale:#dce7e5;--danger:#81524a}
+    *{box-sizing:border-box} html,body{min-height:100%}
+    body{margin:0;background:#dfdcd4;color:var(--ink);font-family:"Inter Tight",sans-serif;font-weight:400;-webkit-font-smoothing:antialiased}
+    button,input,select{font:inherit;color:inherit}
+    .app{position:relative;width:100%;max-width:430px;min-height:100svh;margin:0 auto;overflow:hidden;background:var(--paper)}
+    .content{min-height:100svh;padding:calc(28px + env(safe-area-inset-top)) 28px calc(106px + env(safe-area-inset-bottom));animation:settle 620ms cubic-bezier(.22,.72,.2,1) both}
+    @keyframes settle{from{opacity:0;transform:translate3d(0,5px,0)}to{opacity:1;transform:none}}
+    .brand-row,.brand,.nav,.setting-row,.cat-row{display:flex;align-items:center;justify-content:space-between}
+    .brand{justify-content:flex-start;gap:9px;color:var(--muted);font-size:11px;letter-spacing:.16em;text-transform:uppercase}
+    .square{width:6px;height:6px;background:var(--accent)}
+    .sample-tag{color:var(--faint);font-size:9px;letter-spacing:.08em}
+    .eyebrow{margin:72px 0 12px;color:var(--muted);font-size:10px;letter-spacing:.08em}
+    h1,h2,h3,p{margin-top:0} h1{margin-bottom:0;font-size:38px;font-weight:400;letter-spacing:-.03em;line-height:1.04}
+    h2{margin-bottom:0;font-size:20px;font-weight:400;letter-spacing:-.02em;line-height:1.2}
+    .section{margin-top:50px}
+    .section-label{margin-bottom:14px;color:var(--muted);font-size:10px;letter-spacing:.07em}
+    .setting-row{min-height:56px;padding:0;border-bottom:1px solid var(--line);gap:16px}
+    .setting-row:first-child{border-top:1px solid var(--line)}
+    .setting-label{flex:1;min-width:0;font-size:13px}
+    .setting-detail{margin-top:3px;color:var(--muted);font-size:10px}
+    .setting-value{flex:0 0 auto;color:var(--muted);font-size:12px}
+    .toggle{position:relative;flex:0 0 auto;width:42px;height:24px;border:0;border-radius:2px;background:var(--line);cursor:pointer;transition:background-color 260ms ease}
+    .toggle[aria-checked="true"]{background:var(--accent)}
+    .toggle .knob{position:absolute;top:3px;left:3px;width:18px;height:18px;background:var(--white);transition:transform 260ms cubic-bezier(.22,.72,.2,1)}
+    .toggle[aria-checked="true"] .knob{transform:translateX(18px)}
+    .status-dot{width:6px;height:6px;border-radius:0}
+    .status-dot.on{background:var(--accent)} .status-dot.off{background:var(--faint)}
+
+    /* Region selector */
+    .region-select{
+      width:100%;min-height:48px;margin-bottom:16px;padding:0 12px;
+      border:1px solid var(--line);background:var(--white);color:var(--ink);
+      font-size:13px;cursor:pointer;outline:0;-webkit-appearance:none;appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='none' stroke='%23a3a199' stroke-width='1' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 14px center;
+    }
+    .region-select:focus{border-color:var(--accent)}
+
+    /* Category management */
+    .cat-row{min-height:54px;padding:0;border-bottom:1px solid var(--line);gap:16px;cursor:pointer;background:transparent;width:100%;text-align:left;border-left:0;border-right:0;border-top:0}
+    .cat-row:first-child{border-top:1px solid var(--line)}
+    .cat-row:active{background:var(--accent-pale)}
+    .cat-name{flex:1;min-width:0;font-size:13px}
+    .cat-meta{margin-top:2px;color:var(--muted);font-size:10px}
+    .chevron{color:var(--faint);font-size:14px}
+
+    /* Recurring */
+    .recurring-row{display:flex;justify-content:space-between;align-items:center;min-height:54px;border-bottom:1px solid var(--line);gap:16px}
+    .recurring-row:first-child{border-top:1px solid var(--line)}
+    .recurring-name{font-size:13px}
+    .recurring-meta{margin-top:2px;color:var(--muted);font-size:10px}
+    .recurring-amount{flex:0 0 auto;font-variant-numeric:tabular-nums;font-size:13px;color:var(--accent)}
+    .add-btn{display:block;margin:18px 0 0 auto;padding:0 0 3px;border:0;border-bottom:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;font-size:11px}
+
+    /* Couple Sync card */
+    .sync-card{margin-top:50px;padding:24px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .sync-head{display:flex;align-items:center;gap:9px;margin-bottom:14px;color:var(--muted);font-size:10px;letter-spacing:.07em}
+    .sync-state{margin-top:6px}
+    .partner-card{margin-top:18px;padding:16px;border:1px solid var(--line);background:var(--white)}
+    .partner-top{display:flex;align-items:center;justify-content:space-between}
+    .partner-name{font-size:14px}
+    .partner-meta{margin-top:3px;color:var(--muted);font-size:10px}
+    .partner-actions{margin-top:14px;display:flex;gap:8px}
+    .partner-actions button{min-height:38px;padding:0 12px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;font-size:11px}
+    .partner-actions button.danger{color:var(--danger);border-color:transparent}
+    .invite-block{margin-top:18px}
+    .invite-link{display:flex;align-items:center;gap:10px;margin-top:12px;padding:12px 14px;border:1px solid var(--line);background:var(--white);font-size:11px;color:var(--muted)}
+    .invite-link code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);font-size:11px}
+    .copy-btn{flex:0 0 auto;min-height:34px;padding:0 10px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;font-size:10px}
+    .combined-preview{margin-top:20px;padding:14px 16px;border:1px solid var(--line);background:var(--accent-pale)}
+    .combined-label{color:var(--accent);font-size:10px;letter-spacing:.07em}
+    .combined-row{display:flex;justify-content:space-between;margin-top:10px;font-size:12px}
+    .combined-row span:last-child{font-variant-numeric:tabular-nums;color:var(--accent)}
+    .rest-track{position:relative;height:1px;margin:36px 0 0;background:var(--line)}
+    .rest-track span{position:absolute;top:-2px;width:5px;height:5px;background:var(--accent);animation:rest 2.8s cubic-bezier(.4,0,.2,1) both}
+    @keyframes rest{from{left:0}to{left:calc(100% - 5px)}}
+
+    /* Bottom sheet */
+    .sheet-backdrop{position:fixed;z-index:30;inset:0;display:none;align-items:flex-end;justify-content:center;background:rgba(42,42,40,.22);backdrop-filter:blur(2px)}
+    .sheet-backdrop.open{display:flex}
+    .sheet{width:100%;max-width:430px;padding:24px 28px max(24px,env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--paper);animation:sheetIn 420ms cubic-bezier(.22,.72,.2,1) both}
+    @keyframes sheetIn{from{opacity:0;transform:translate3d(0,22px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+    .sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+    .sheet h3{margin:0;font-size:16px;font-weight:400}
+    .sheet-close{min-height:40px;border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:11px}
+    .sheet-label{margin:18px 0 10px;color:var(--muted);font-size:10px;letter-spacing:.07em}
+    .sheet input{width:100%;min-height:48px;margin-bottom:8px;padding:0 12px;border:1px solid var(--line);background:var(--white);color:var(--ink);font-size:13px;outline:0}
+    .sheet input:focus{border-color:var(--accent)}
+    .rule-row{display:flex;align-items:center;gap:10px;min-height:42px;padding:0;border-bottom:1px solid var(--line)}
+    .rule-row:first-child{border-top:1px solid var(--line)}
+    .rule-merchant{flex:1;font-size:12px}
+    .rule-arrow{color:var(--faint);font-size:10px}
+    .rule-cat{color:var(--accent);font-size:12px}
+    .rule-remove{min-width:24px;min-height:24px;border:0;background:transparent;color:var(--faint);cursor:pointer;font-size:14px}
+    .sheet-add-rule{display:flex;gap:8px;margin-top:12px}
+    .sheet-add-rule input{flex:1;margin:0}
+    .sheet-add-rule button{flex:0 0 auto;min-height:48px;padding:0 14px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;font-size:11px}
+    .sheet-save{width:100%;min-height:50px;margin-top:20px;border:1px solid var(--accent);background:var(--accent);color:var(--white);cursor:pointer;font-size:13px}
+
+    .about{margin-top:50px;color:var(--faint);font-size:10px;line-height:1.6}
+    .nav{position:absolute;z-index:10;left:0;right:0;bottom:0;min-height:72px;padding:12px 28px max(12px,env(safe-area-inset-bottom));border-top:1px solid var(--line);background:color-mix(in srgb,var(--paper) 94%,transparent);backdrop-filter:blur(10px)}
+    .nav button{min-width:76px;min-height:44px;border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:11px}.nav button.active{color:var(--accent)}
+    .toast{position:fixed;z-index:50;left:50%;bottom:88px;max-width:340px;padding:10px 14px;border:1px solid var(--line);background:var(--ink);color:var(--paper);font-size:11px;opacity:0;pointer-events:none;transform:translateX(-50%);transition:opacity 220ms ease}.toast.show{opacity:1}
+    button:focus-visible,input:focus-visible,select:focus-visible{outline:1px solid var(--accent);outline-offset:3px}
+    @media(min-width:700px){body{padding:28px 0}.app,.content{min-height:900px}.app{border:1px solid #cfccc4}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.content{opacity:1;transform:none}}
+  </style>
+</head>
+<body>
+  <main class="app" aria-label="Nagi Settings prototype">
+    <div class="content">
+      <div class="brand-row"><div class="brand"><span class="square"></span><span>Nagi</span></div><span class="sample-tag">Sample data</span></div>
+      <p class="eyebrow">Settings</p>
+      <h1>Quiet by default</h1>
+
+      <!-- Capture -->
+      <section class="section" aria-labelledby="captureLabel">
+        <div class="section-label" id="captureLabel">Capture</div>
+        <select class="region-select" id="regionSelect" aria-label="Region">
+          <option value="sg" selected>Singapore</option>
+          <option value="my">Malaysia</option>
+          <option value="id">Indonesia</option>
+          <option value="au">Australia</option>
+          <option value="uk">United Kingdom</option>
+          <option value="us">United States</option>
+          <option value="other">Other</option>
+        </select>
+        <div class="setting-row">
+          <div class="setting-label">Notification Access<div class="setting-detail">Nagi reads payment alerts to log expenses</div></div>
+          <span class="setting-value"><span class="status-dot on"></span> Active</span>
+        </div>
+        <div id="captureSources"></div>
+      </section>
+
+      <!-- Categories -->
+      <section class="section" aria-labelledby="catLabel">
+        <div class="section-label" id="catLabel">Categories</div>
+        <div id="categoryList"></div>
+      </section>
+
+      <!-- Recurring -->
+      <section class="section" aria-labelledby="recurLabel">
+        <div class="section-label" id="recurLabel">Recurring expenses</div>
+        <div id="recurringList">
+          <div class="recurring-row"><div><div class="recurring-name">Netflix</div><div class="recurring-meta">Monthly / Next: Aug 1</div></div><span class="recurring-amount">$15.98</span></div>
+          <div class="recurring-row"><div><div class="recurring-name">Spotify</div><div class="recurring-meta">Monthly / Next: Aug 1</div></div><span class="recurring-amount">$11.98</span></div>
+          <div class="recurring-row"><div><div class="recurring-name">Phone plan</div><div class="recurring-meta">Monthly / Next: Aug 5</div></div><span class="recurring-amount">$45.00</span></div>
+          <div class="recurring-row"><div><div class="recurring-name">Gym membership</div><div class="recurring-meta">Monthly / Next: Aug 15</div></div><span class="recurring-amount">$120.00</span></div>
+          <div class="recurring-row"><div><div class="recurring-name">Insurance</div><div class="recurring-meta">Monthly / Next: Aug 12</div></div><span class="recurring-amount">$180.00</span></div>
+        </div>
+        <button class="add-btn" id="addRecurring" type="button">Add recurring expense</button>
+      </section>
+
+      <!-- Couple Sync -->
+      <section class="sync-card" aria-labelledby="syncLabel">
+        <div class="sync-head" id="syncLabel">Couple Sync</div>
+        <div id="connectedState" class="sync-state">
+          <h2>You and <span style="color:var(--accent)">Kelly</span> are sharing</h2>
+          <div class="partner-card">
+            <div class="partner-top">
+              <div><div class="partner-name">Kelly</div><div class="partner-meta">Connected 3 weeks ago</div></div>
+              <span class="status-dot on"></span>
+            </div>
+            <div class="partner-actions">
+              <button id="manageShare" type="button">Sharing preferences</button>
+              <button class="danger" id="disconnect" type="button">Disconnect</button>
+            </div>
+          </div>
+          <div class="combined-preview">
+            <div class="combined-label">Combined this month</div>
+            <div class="combined-row"><span>Your spending</span><span>$3,247</span></div>
+            <div class="combined-row"><span>Kelly's spending</span><span>$2,890</span></div>
+            <div class="combined-row"><span>Shared household</span><span>$1,180</span></div>
+            <div class="combined-row" style="border-top:1px solid var(--accent);padding-top:8px;margin-top:8px"><span style="color:var(--ink)">Total household</span><span style="font-size:14px">$7,317</span></div>
+          </div>
+        </div>
+        <div id="disconnectedState" class="sync-state" style="display:none">
+          <h2>Share with your partner</h2>
+          <p style="color:var(--muted);font-size:12px;line-height:1.55;margin-top:8px">Both of you keep tracking independently. Nagi shows combined household spending without either person giving up their private ledger.</p>
+          <div class="invite-block">
+            <div class="invite-link">
+              <code id="inviteCode">nagi.app/join/k7m2x9</code>
+              <button class="copy-btn" id="copyInvite" type="button">Copy</button>
+            </div>
+          </div>
+        </div>
+        <div class="rest-track" aria-hidden="true"><span></span></div>
+      </section>
+
+      <!-- Privacy -->
+      <section class="section" aria-labelledby="privacyLabel">
+        <div class="section-label" id="privacyLabel">Privacy</div>
+        <div class="setting-row"><div class="setting-label">Local storage<div class="setting-detail">All data stays on this device</div></div><span class="setting-value">Always on</span></div>
+        <div class="setting-row"><div class="setting-label">Bank integration<div class="setting-detail">Nagi never connects to your bank</div></div><span class="setting-value">Never</span></div>
+        <div class="setting-row"><div class="setting-label">Cloud backup<div class="setting-detail">Encrypted optional backup</div></div><button class="toggle" role="switch" aria-checked="false" aria-label="Cloud backup"><span class="knob"></span></button></div>
+        <div class="setting-row"><div class="setting-label">Export data<div class="setting-detail">Download as CSV</div></div><button id="exportData" type="button" style="border:0;background:transparent;color:var(--accent);font-size:11px;cursor:pointer">Export</button></div>
+      </section>
+
+      <div class="about">Nagi v0.1 prototype<br>Sample data shown throughout. Nothing is stored or sent.</div>
+    </div>
+
+    <nav class="nav" aria-label="Primary navigation">
+      <button id="goToday" type="button">Today</button>
+      <button id="goTrends" type="button">Trends</button>
+      <button class="active" type="button">Settings</button>
+    </nav>
+  </main>
+
+  <!-- Category management sheet -->
+  <div class="sheet-backdrop" id="catSheet" role="dialog" aria-modal="true" aria-labelledby="catSheetTitle">
+    <div class="sheet">
+      <div class="sheet-head"><h3 id="catSheetTitle">Edit category</h3><button class="sheet-close" id="closeCat" type="button">Close</button></div>
+      <div class="sheet-label">Name</div>
+      <input id="catEditName" type="text" autocomplete="off">
+      <div class="sheet-label">Merchant rules</div>
+      <div id="ruleList"></div>
+      <div class="sheet-add-rule">
+        <input id="newRuleInput" type="text" placeholder="e.g. FairPrice" autocomplete="off">
+        <button id="addRuleBtn" type="button">Add rule</button>
+      </div>
+      <button class="sheet-save" id="saveCat" type="button">Save changes</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    let toastTimer;
+    function showToast(message){clearTimeout(toastTimer);const t=document.getElementById('toast');t.textContent=message;t.classList.add('show');toastTimer=setTimeout(()=>t.classList.remove('show'),2200)}
+
+    /* Region-aware capture sources */
+    const regionSources={
+      sg:[['DBS PayLah!','Card and wallet notifications',true],['OCBC Pay Anyone','Wallet transfers',true],['SimplyGo','Public transport charges',true]],
+      my:[['Maybank2u','Card and account notifications',true],['Touch\u2019n Go eWallet','Wallet payments',true],['SimplyGo','Public transport',false]],
+      id:[['m-Banking','Bank transfer notifications',true],['GoPay','Wallet payments',true],['OVO','Wallet payments',false]],
+      au:[['CommBank','Card and account notifications',true],['Wise','International transfers',false],['Revolut','Card and multi-currency',false]],
+      uk:[['Monzo','Card and account notifications',true],['Wise','International transfers',false],['Revolut','Card and multi-currency',false]],
+      us:[['Venmo','Payments and transfers',true],['Apple Pay','Wallet transactions',false],['Wise','International transfers',false]],
+      other:[['Primary bank app','Card notifications',true],['Wise','International transfers',false]]
+    };
+    function renderSources(region){
+      const container=document.getElementById('captureSources');container.innerHTML='';
+      regionSources[region].forEach(([name,detail,on])=>{
+        const row=document.createElement('div');row.className='setting-row';
+        row.innerHTML='<div class="setting-label"></div>';
+        row.querySelector('.setting-label').innerHTML='<div>'+name+'</div><div class="setting-detail">'+detail+'</div>';
+        const btn=document.createElement('button');btn.className='toggle';btn.type='button';btn.setAttribute('role','switch');btn.setAttribute('aria-checked',String(on));btn.setAttribute('aria-label',name+' capture');
+        const knob=document.createElement('span');knob.className='knob';btn.appendChild(knob);btn.addEventListener('click',()=>{const checked=btn.getAttribute('aria-checked')==='true';btn.setAttribute('aria-checked',String(!checked))});
+        row.appendChild(btn);container.appendChild(row);
+      });
+    }
+    document.getElementById('regionSelect').addEventListener('change',e=>{renderSources(e.target.value);showToast('Capture sources updated for '+(e.target.selectedOptions[0].text))});
+    renderSources('sg');
+
+    /* Toggles for privacy etc */
+    document.querySelectorAll('.toggle').forEach(t=>{if(!t.closest('#captureSources')&&!t.closest('#catSheet')){t.addEventListener('click',()=>{const on=t.getAttribute('aria-checked')==='true';t.setAttribute('aria-checked',String(!on))})}});
+
+    /* Category management */
+    const categories=[
+      {name:'Food',subs:'Dining, Groceries',rules:[['FairPrice','Groceries'],['Cold Storage','Groceries'],['GrabFood','Dining']]},
+      {name:'Transport',subs:'Public, Rides, Fuel',rules:[['SimplyGo','Public'],['Grab','Rides'],['Shell','Fuel']]},
+      {name:'Shopping',subs:'Retail, Online',rules:[['Shopee','Online'],['Lazada','Online'],['Uniqlo','Retail']]},
+      {name:'Bills',subs:'Utilities, Subscriptions',rules:[['Netflix','Subscriptions'],['SP Group','Utilities']]},
+      {name:'Other',subs:'Miscellaneous',rules:[]}
+    ];
+    let editingCat=null;
+    function renderCategories(){
+      const list=document.getElementById('categoryList');list.innerHTML='';
+      categories.forEach((cat,i)=>{
+        const btn=document.createElement('button');btn.className='cat-row';btn.type='button';
+        btn.innerHTML='<div><div class="cat-name"></div><div class="cat-meta"></div></div><span class="chevron">\u203a</span>';
+        btn.querySelector('.cat-name').textContent=cat.name;
+        const ruleCount=cat.rules.length;
+        btn.querySelector('.cat-meta').textContent=cat.subs+(ruleCount>0?' / '+ruleCount+' rule'+(ruleCount>1?'s':''):' / No rules yet');
+        btn.addEventListener('click',()=>openCatSheet(i));list.appendChild(btn);
+      });
+    }
+    function openCatSheet(index){
+      editingCat=index;const cat=categories[index];
+      document.getElementById('catEditName').value=cat.name;
+      renderRules();document.getElementById('catSheet').classList.add('open');document.getElementById('catEditName').focus();
+    }
+    function renderRules(){
+      const list=document.getElementById('ruleList');list.innerHTML='';
+      if(editingCat===null)return;const cat=categories[editingCat];
+      cat.rules.forEach(([merchant,ruleCat],i)=>{
+        const row=document.createElement('div');row.className='rule-row';
+        row.innerHTML='<span class="rule-merchant"></span><span class="rule-arrow">\u2192</span><span class="rule-cat"></span><button class="rule-remove" type="button">\u00d7</button>';
+        row.querySelector('.rule-merchant').textContent=merchant;
+        row.querySelector('.rule-cat').textContent=ruleCat;
+        row.querySelector('.rule-remove').addEventListener('click',()=>{cat.rules.splice(i,1);renderRules()});
+        list.appendChild(row);
+      });
+    }
+    document.getElementById('closeCat').addEventListener('click',()=>document.getElementById('catSheet').classList.remove('open'));
+    document.getElementById('catSheet').addEventListener('click',e=>{if(e.target===document.getElementById('catSheet'))document.getElementById('catSheet').classList.remove('open')});
+    document.getElementById('addRuleBtn').addEventListener('click',()=>{
+      const input=document.getElementById('newRuleInput');const val=input.value.trim();if(!val)return;
+      categories[editingCat].rules.push([val,categories[editingCat].name]);input.value='';renderRules();
+    });
+    document.getElementById('saveCat').addEventListener('click',()=>{
+      const newName=document.getElementById('catEditName').value.trim();
+      if(newName)categories[editingCat].name=newName;
+      renderCategories();document.getElementById('catSheet').classList.remove('open');showToast('Category saved');
+    });
+    renderCategories();
+
+    /* Couple Sync */
+    const connected=document.getElementById('connectedState'),disconnected=document.getElementById('disconnectedState');
+    document.getElementById('disconnect').addEventListener('click',()=>{connected.style.display='none';disconnected.style.display='block';showToast('Disconnected from Kelly')});
+    document.getElementById('copyInvite').addEventListener('click',()=>{navigator.clipboard?.writeText(document.getElementById('inviteCode').textContent).catch(()=>{});showToast('Invite link copied')});
+    document.getElementById('manageShare').addEventListener('click',()=>showToast('Sharing preferences are part of the full app'));
+    document.getElementById('exportData').addEventListener('click',()=>showToast('Export would download a CSV in the full app'));
+    document.getElementById('addRecurring').addEventListener('click',()=>showToast('Add recurring is part of the full app'));
+
+    /* Nav */
+    document.getElementById('goToday').addEventListener('click',()=>location.href='app.html');
+    document.getElementById('goTrends').addEventListener('click',()=>location.href='trends.html');
+  </script>
+</body>
+</html>

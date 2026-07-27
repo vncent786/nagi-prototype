@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f1e9">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500&display=swap" rel="stylesheet">
+  <title>Nagi onboarding</title>
+  <style>
+    :root {
+      --paper: #f4f1e9;
+      --ink: #2d302d;
+      --muted: #777872;
+      --faint: #a3a39c;
+      --line: #d8d5cb;
+      --accent: #814543;
+      --accent-pale: #e6d6d4;
+      --surface: #ebe8df;
+      --white: #faf9f5;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--paper); }
+    body {
+      min-height: 100%;
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Inter Tight", system-ui, sans-serif;
+      font-weight: 400;
+      letter-spacing: .003em;
+      -webkit-font-smoothing: antialiased;
+    }
+    button { font: inherit; color: inherit; }
+
+    .app {
+      position: relative;
+      width: min(100%, 430px);
+      min-height: 100svh;
+      margin: 0 auto;
+      overflow: hidden;
+      background: var(--paper);
+    }
+
+    .topbar {
+      position: fixed;
+      z-index: 30;
+      top: 0;
+      left: 50%;
+      width: min(100%, 430px);
+      height: calc(68px + env(safe-area-inset-top));
+      transform: translateX(-50%);
+      display: grid;
+      grid-template-columns: 64px 1fr 64px;
+      align-items: end;
+      padding: env(safe-area-inset-top) 26px 16px;
+      background: color-mix(in srgb, var(--paper) 94%, transparent);
+      backdrop-filter: blur(12px);
+    }
+    .back {
+      min-height: 32px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 12px;
+      text-align: left;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .back.is-visible { opacity: 1; pointer-events: auto; }
+    .steps { display: flex; justify-content: center; gap: 7px; padding-bottom: 12px; }
+    .step {
+      width: 4px;
+      height: 4px;
+      background: var(--line);
+      transition: width 320ms ease, background-color 320ms ease;
+    }
+    .step.is-current { width: 15px; background: var(--accent); }
+
+    .viewport {
+      position: relative;
+      z-index: 2;
+      min-height: 100svh;
+      padding: calc(78px + env(safe-area-inset-top)) 30px max(28px, env(safe-area-inset-bottom));
+    }
+    .screen {
+      display: none;
+      min-height: calc(100svh - 106px - env(safe-area-inset-top));
+      flex-direction: column;
+      opacity: 0;
+      transform: translate3d(0, 5px, 0);
+    }
+    .screen.is-active {
+      display: flex;
+      animation: arrive 680ms cubic-bezier(.22, .72, .2, 1) forwards;
+    }
+    @keyframes arrive { to { opacity: 1; transform: translate3d(0, 0, 0); } }
+
+    .nagi-wind {
+      position: absolute;
+      z-index: 1;
+      top: 58%;
+      left: 0;
+      width: 100%;
+      height: 210px;
+      overflow: visible;
+      pointer-events: none;
+      opacity: .18;
+      mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 72%, transparent 100%);
+    }
+    .wind-path {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: .55;
+      stroke-linecap: round;
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+      animation: windSettle 12s cubic-bezier(.34, .12, .22, 1) infinite;
+    }
+    .wind-path:nth-child(2) { animation-delay: -7.4s; animation-duration: 15s; opacity: .68; }
+    .wind-path:nth-child(3) { animation-delay: -3.2s; animation-duration: 18s; opacity: .48; }
+    @keyframes windSettle {
+      0%, 8% { stroke-dashoffset: 1; opacity: 0; }
+      24% { opacity: .75; }
+      64% { stroke-dashoffset: 0; opacity: .52; }
+      82%, 100% { stroke-dashoffset: -.16; opacity: 0; }
+    }
+
+    .screen.is-active h1,
+    .screen.is-active h2 { animation: copySettle 760ms cubic-bezier(.22, .72, .2, 1) both; }
+    .screen.is-active .lead { animation: copySettle 760ms 90ms cubic-bezier(.22, .72, .2, 1) both; }
+    .screen.is-active .choice { animation: rowSettle 520ms cubic-bezier(.22, .72, .2, 1) both; }
+    .screen.is-active .choice:nth-child(1) { animation-delay: 90ms; }
+    .screen.is-active .choice:nth-child(2) { animation-delay: 145ms; }
+    .screen.is-active .choice:nth-child(3) { animation-delay: 200ms; }
+    .screen.is-active .choice:nth-child(4) { animation-delay: 255ms; }
+    .screen.is-active .choice:nth-child(5) { animation-delay: 310ms; }
+    .screen.is-active .choice:nth-child(6) { animation-delay: 365ms; }
+    @keyframes copySettle {
+      from { opacity: 0; transform: translate3d(0, 7px, 0); }
+      to { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+    @keyframes rowSettle {
+      from { opacity: 0; transform: translate3d(7px, 0, 0); }
+      to { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+
+    .opening { padding-top: clamp(30px, 6vh, 62px); }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 42px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .name-meaning {
+      margin-left: auto;
+      color: var(--faint);
+      font-size: 9px;
+      letter-spacing: .05em;
+      text-transform: none;
+    }
+    .square { width: 6px; height: 6px; flex: 0 0 auto; background: var(--accent); }
+    h1, h2 {
+      margin: 0;
+      font-weight: 400;
+      letter-spacing: -.018em;
+      text-wrap: balance;
+    }
+    h1 { max-width: 350px; font-size: clamp(34px, 9vw, 42px); line-height: 1.08; }
+    h2 { max-width: 350px; font-size: 28px; line-height: 1.14; }
+    .lead {
+      max-width: 340px;
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+      text-wrap: pretty;
+    }
+    .spacer { flex: 1; min-height: 28px; }
+
+    .choices { margin-top: 34px; }
+    .choice {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 17px 0;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 15px;
+      text-align: left;
+      transition: color 200ms ease;
+    }
+    .choice:first-child { border-top: 1px solid var(--line); }
+    .choice-box {
+      width: 8px;
+      height: 8px;
+      border: 1px solid var(--faint);
+      transition: background-color 200ms ease, border-color 200ms ease, border-radius 200ms ease;
+    }
+    .choice[aria-pressed="true"] { color: var(--accent); }
+    .choice[aria-pressed="true"] .choice-box { border-color: var(--accent); background: var(--accent); border-radius: 0; }
+    .multi-hint { margin-top: 12px; color: var(--faint); font-size: 11px; }
+
+    .primary, .secondary {
+      width: 100%;
+      min-height: 54px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: transform 120ms ease, opacity 180ms ease, background-color 180ms ease;
+    }
+    .primary:active, .secondary:active { transform: scale(.992); }
+    .primary {
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: var(--white);
+      font-weight: 500;
+    }
+    .primary:disabled { opacity: .28; cursor: not-allowed; }
+    .secondary {
+      margin-top: 10px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+    }
+    .text-button {
+      min-height: 40px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 11px;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+    button:focus-visible, summary:focus-visible {
+      outline: 1px solid var(--accent);
+      outline-offset: 4px;
+    }
+
+    .calm-demo {
+      position: relative;
+      height: 240px;
+      margin-top: 38px;
+      overflow: hidden;
+    }
+    .demo-notification {
+      position: absolute;
+      z-index: 3;
+      top: 12px;
+      left: 8px;
+      right: 8px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius:2px;
+      background: color-mix(in srgb, var(--white) 82%, transparent);
+      animation: notify 6.4s cubic-bezier(.22, .72, .2, 1) infinite;
+    }
+    .notification-head { display: flex; justify-content: space-between; color: var(--faint); font-size: 9px; }
+    .notification-main { margin-top: 9px; font-size: 13px; }
+    .notification-sub { margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .quiet-line {
+      position: absolute;
+      z-index: 1;
+      top: 89px;
+      left: 31px;
+      width: 1px;
+      height: 72px;
+      background: var(--line);
+      transform-origin: top;
+      animation: lineGrow 6.4s ease infinite;
+    }
+    .traveller {
+      position: absolute;
+      z-index: 2;
+      top: 87px;
+      left: 29px;
+      width: 5px;
+      height: 5px;
+      background: var(--accent);
+      animation: travel 6.4s cubic-bezier(.4, 0, .2, 1) infinite;
+    }
+    .ledger-sample {
+      position: absolute;
+      z-index: 2;
+      left: 8px;
+      right: 8px;
+      bottom: 19px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      padding: 15px 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      opacity: 0;
+      animation: ledgerIn 6.4s ease infinite;
+    }
+    .ledger-name { font-size: 13px; }
+    .ledger-meta { margin-top: 4px; color: var(--muted); font-size: 10px; }
+    .ledger-amount { font-size: 13px; font-variant-numeric: tabular-nums; }
+    @keyframes notify {
+      0%, 8% { opacity: 0; transform: translate3d(0, -15px, 0); }
+      18%, 67% { opacity: 1; transform: translate3d(0, 0, 0); }
+      78%, 100% { opacity: .35; transform: translate3d(0, 0, 0); }
+    }
+    @keyframes lineGrow {
+      0%, 31% { transform: scaleY(0); }
+      47%, 100% { transform: scaleY(1); }
+    }
+    @keyframes travel {
+      0%, 31% { opacity: 0; transform: translate3d(0, 0, 0); }
+      42% { opacity: 1; }
+      67% { opacity: 1; transform: translate3d(0, 72px, 0); }
+      78%, 100% { opacity: 0; transform: translate3d(0, 72px, 0); }
+    }
+    @keyframes ledgerIn {
+      0%, 55% { opacity: 0; }
+      68%, 100% { opacity: 1; }
+    }
+
+    .reason-list { margin-top: 34px; border-top: 1px solid var(--line); }
+    .reason-item {
+      display: grid;
+      grid-template-columns: 8px 1fr;
+      gap: 16px;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--line);
+      animation: rowSettle 520ms cubic-bezier(.22, .72, .2, 1) both;
+    }
+    .reason-item:nth-child(1) { animation-delay: 100ms; }
+    .reason-item:nth-child(2) { animation-delay: 160ms; }
+    .reason-item:nth-child(3) { animation-delay: 220ms; }
+    .reason-item:nth-child(4) { animation-delay: 280ms; }
+    .reason-item:nth-child(5) { animation-delay: 340ms; }
+    .reason-dot { width: 5px; height: 5px; background: var(--accent); margin-top: 6px; }
+    .reason-title { font-size: 13px; line-height: 1.4; }
+    .reason-detail-line { margin-top: 5px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+    .sample-notification {
+      margin-top: 34px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius:2px;
+      background: color-mix(in srgb, var(--white) 82%, transparent);
+    }
+    .example-note { color: var(--faint); font-size: 9px; margin-bottom: 8px; }
+    .notification-head { display: flex; justify-content: space-between; color: var(--faint); font-size: 9px; }
+    .capture-zone { margin-top: 24px; }
+    .capture-line { width: 1px; height: 0; background: var(--accent); margin-left: 29px; transform-origin: top; transition: height 900ms ease; }
+    .capture-zone.is-done .capture-line { height: 72px; }
+    .capture-result {
+      margin-top: 0;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      padding: 15px 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      opacity: 0;
+      transform: translate3d(0, -8px, 0);
+      transition: opacity 700ms ease 500ms, transform 700ms ease 500ms;
+    }
+    .capture-zone.is-done .capture-result { opacity: 1; transform: translate3d(0, 0, 0); }
+
+    .category-row { margin-top: 34px; }
+    .small-label { color: var(--muted); font-size: 11px; margin-bottom: 12px; }
+    .category-list { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
+    .category-list::-webkit-scrollbar { display: none; }
+    .category {
+      min-height: 40px;
+      padding: 0 13px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+      white-space: nowrap;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 200ms ease;
+    }
+    .category[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-pale); color: var(--accent); }
+
+    .permission-copy {
+      max-width: 340px;
+      margin-top: 20px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--ink);
+    }
+    .permission-copy strong { font-weight: 500; }
+    details { margin-top: 24px; }
+    summary {
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 12px;
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      list-style: none;
+    }
+    summary::-webkit-details-marker { display: none; }
+    .details-body { padding: 10px 0 0; color: var(--faint); font-size: 12px; line-height: 1.6; }
+
+    .review-label { color: var(--faint); font-size: 9px; margin-bottom: 20px; }
+    .value-pair { margin-top: 34px; }
+    .value-row { padding: 16px 0; border-top: 1px solid var(--line); }
+    .value-row:last-child { border-bottom: 1px solid var(--line); }
+    .value-title { font-size: 13px; }
+    .value-copy { margin-top: 4px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .offer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 30px;
+      padding: 18px 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .trial { font-size: 15px; }
+    .after-trial { margin-top: 3px; color: var(--faint); font-size: 11px; }
+    .price { font-size: 17px; }
+    .billing { margin-top: 14px; color: var(--faint); font-size: 10px; line-height: 1.55; }
+    .legal { display: flex; gap: 18px; margin-top: 18px; }
+    .legal button { min-height: 32px; border: 0; background: transparent; color: var(--faint); font-size: 10px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+
+    .setting-line { display: flex; justify-content: space-between; margin-top: 34px; padding: 16px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: 14px; }
+    .off { color: var(--faint); }
+    .setup-copy { margin-top: 14px; color: var(--muted); font-size: 12px; line-height: 1.55; }
+
+    .done-block { text-align: center; }
+    .done-block .square { margin: 0 auto 24px; width: 8px; height: 8px; }
+    .done-line { position: relative; height: 1px; margin: 40px auto; max-width: 200px; background: var(--line); }
+    .done-line span { position: absolute; top: -2px; width: 5px; height: 5px; background: var(--accent); animation: comeToRest 2.6s cubic-bezier(.4, 0, .2, 1) both; }
+    @keyframes comeToRest { from { left: 0; } to { left: calc(100% - 5px); } }
+
+    .toast {
+      position: fixed;
+      z-index: 40;
+      bottom: 28px;
+      left: 50%;
+      max-width: 340px;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      background: var(--ink);
+      color: var(--paper);
+      font-size: 11px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(-50%);
+      transition: opacity 200ms ease;
+    }
+    .toast.is-visible { opacity: 1; }
+
+    @media (min-width: 700px) {
+      body { padding: 34px 0; background: #dfdcd4; }
+      .app { min-height: 880px; border: 1px solid #d0cdc4; }
+      .topbar { position: absolute; }
+      .screen { min-height: 750px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .demo-notification, .ledger-sample { opacity: 1; transform: none; }
+      .quiet-line { transform: scaleY(1); }
+      .traveller { opacity: 1; transform: translate3d(0, 72px, 0); }
+    }
+
+    /* Nagi intro screen */
+    .intro-block { margin-top: 10px; }
+    .intro-line {
+      opacity: 0;
+      transform: translate3d(0, 6px, 0);
+      transition: opacity 800ms ease, transform 800ms ease;
+    }
+    .intro-line.is-shown { opacity: 1; transform: none; }
+    .intro-mark { display: flex; align-items: center; gap: 10px; margin-bottom: 36px; animation: copySettle 900ms cubic-bezier(.22,.72,.2,1) both; }
+    .intro-mark .square { width: 8px; height: 8px; }
+    .intro-mark-text { color: var(--muted); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
+    .intro-heading { font-size: 28px; font-weight: 400; letter-spacing: -.018em; line-height: 1.16; margin: 0 0 28px; max-width: 340px; }
+    .intro-body { font-size: 15px; line-height: 1.65; color: var(--muted); max-width: 340px; margin: 0 0 20px; }
+    .intro-principle {
+      display: flex;
+      gap: 14px;
+      padding: 14px 0;
+      border-top: 1px solid var(--line);
+      align-items: baseline;
+    }
+    .intro-principle:last-of-type { border-bottom: 1px solid var(--line); }
+    .intro-principle-num { color: var(--accent); font-size: 11px; font-variant-numeric: tabular-nums; flex: 0 0 16px; }
+    .intro-principle-text { font-size: 14px; line-height: 1.45; color: var(--ink); }
+    .intro-still { position: relative; height: 1px; margin: 40px 0; background: var(--line); }
+    .intro-still span { position: absolute; top: -2px; width: 5px; height: 5px; background: var(--accent); animation: comeToRest 3.2s cubic-bezier(.4,0,.2,1) both; }
+
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <button class="back" id="back" type="button">Back</button>
+      <div class="steps" id="steps" aria-label="Onboarding progress"></div>
+      <span></span>
+    </header>
+
+    <svg class="nagi-wind" viewBox="0 0 430 280" preserveAspectRatio="none" aria-hidden="true">
+      <path class="wind-path" pathLength="1" d="M-46 72 C56 24 176 112 476 66"></path>
+      <path class="wind-path" pathLength="1" d="M-28 151 C94 121 222 174 468 148"></path>
+      <path class="wind-path" pathLength="1" d="M-62 225 C78 201 210 240 482 221"></path>
+    </svg>
+
+    <div class="viewport">
+      <!-- Screen 0: Welcome -->
+      <section class="screen opening is-active" data-screen="0">
+        <div class="brand"><span class="square"></span><span>Nagi</span><span class="name-meaning">when wind stops</span></div>
+        <h1>Your spending, kept quietly.</h1>
+        <p class="lead">Pay as usual. Nagi keeps a tidy record from payment notifications. You never connect a bank account.</p>
+        <div class="calm-demo" aria-label="Example payment notification becoming a Nagi expense">
+          <div class="demo-notification">
+            <div class="notification-head"><span>Harbor Pay</span><span>now</span></div>
+            <div class="notification-main">Payment complete</div>
+            <div class="notification-sub">$4.80 at Harbor Coffee</div>
+          </div>
+          <div class="quiet-line"></div>
+          <div class="traveller"></div>
+          <div class="ledger-sample">
+            <div><div class="ledger-name">Harbor Coffee</div><div class="ledger-meta">Dining / Today</div></div>
+            <div class="ledger-amount">$4.80</div>
+          </div>
+        </div>
+        <div class="spacer"></div>
+        <button class="primary" data-next type="button">Try a sample</button>
+        <button class="text-button" data-toast="Login is not connected in this review build." type="button">I already use Nagi</button>
+      </section>
+
+      <!-- Screen 1: Prior experience -->
+      <section class="screen" data-screen="1">
+        <h2>Have you tried tracking your spending before?</h2>
+        <div class="choices" id="historyChoices">
+          <button class="choice" data-history="current" aria-pressed="false" type="button"><span>I use an app now</span><span class="choice-box"></span></button>
+          <button class="choice" data-history="stopped" aria-pressed="false" type="button"><span>I tried an app and stopped</span><span class="choice-box"></span></button>
+          <button class="choice" data-history="spreadsheet" aria-pressed="false" type="button"><span>I use notes or a spreadsheet</span><span class="choice-box"></span></button>
+          <button class="choice" data-history="none" aria-pressed="false" type="button"><span>I haven't found a method that sticks</span><span class="choice-box"></span></button>
+        </div>
+        <div class="spacer"></div>
+        <button class="primary" id="historyNext" data-next type="button" disabled>Continue</button>
+      </section>
+
+      <!-- Screen 2: Pain points (multi-select) -->
+      <section class="screen" data-screen="2">
+        <h2 id="painTitle">What gets in the way?</h2>
+        <div class="choices" id="painChoices">
+          <button class="choice" data-pain="manual" aria-pressed="false" type="button"><span>Entering every purchase gets old</span><span class="choice-box"></span></button>
+          <button class="choice" data-pain="privacy" aria-pressed="false" type="button"><span>I don't want to connect my bank</span><span class="choice-box"></span></button>
+          <button class="choice" data-pain="complex" aria-pressed="false" type="button"><span>It's too complex</span><span class="choice-box"></span></button>
+          <button class="choice" data-pain="sync" aria-pressed="false" type="button"><span>I want to share with people I care about</span><span class="choice-box"></span></button>
+          <button class="choice" data-pain="clutter" aria-pressed="false" type="button"><span>Budgeting apps feel like too much work</span><span class="choice-box"></span></button>
+          <button class="choice" data-pain="insight" aria-pressed="false" type="button"><span>I track things but learn very little</span><span class="choice-box"></span></button>
+        </div>
+        <p class="multi-hint">Choose all that apply.</p>
+        <div class="spacer"></div>
+        <button class="primary" id="painNext" data-next type="button" disabled>Continue</button>
+      </section>
+
+      <!-- Screen 3: Tailored reason -->
+      <section class="screen" data-screen="3">
+        <h2>Nagi was built around exactly that.</h2>
+        <div class="reason-list" id="reasonList"></div>
+        <div class="spacer"></div>
+        <button class="primary" data-next type="button">Let me try it</button>
+      </section>
+
+            <!-- Screen 4: What is Nagi -->
+      <section class="screen" data-screen="4">
+        <div class="intro-block">
+          <div class="intro-mark"><span class="square"></span><span class="intro-mark-text">Nagi</span></div>
+          <div class="intro-line" data-delay="0">
+            <h2 class="intro-heading">A quiet record of your spending.</h2>
+          </div>
+          <div class="intro-line" data-delay="600">
+            <p class="intro-body">Nagi was built for one thing: to keep track of what you spend without asking you to change how you pay, or to hand over your bank login.</p>
+          </div>
+          <div class="intro-line" data-delay="1400">
+            <div class="intro-principle"><span class="intro-principle-num">1</span><span class="intro-principle-text">You pay as usual. Nagi captures the notification.</span></div>
+          </div>
+          <div class="intro-line" data-delay="2200">
+            <div class="intro-principle"><span class="intro-principle-num">2</span><span class="intro-principle-text">The record appears on its own. You correct only when needed.</span></div>
+          </div>
+          <div class="intro-line" data-delay="3000">
+            <div class="intro-principle"><span class="intro-principle-num">3</span><span class="intro-principle-text">Everything stays on your phone. No bank access, no cloud account.</span></div>
+          </div>
+          <div class="intro-line" data-delay="3800">
+            <div class="intro-still"><span></span></div>
+          </div>
+        </div>
+        <div class="spacer"></div>
+        <div class="intro-line" data-delay="4400">
+          <button class="primary" data-next type="button">See it work</button>
+        </div>
+      </section>
+
+      <!-- Screen 5: Sample capture -->
+      <section class="screen" data-screen="5">
+        <h2>See what Nagi would keep.</h2>
+        <div class="sample-notification">
+          <div class="example-note">Example notification</div>
+          <div class="notification-head"><span>Harbor Pay</span><span>now</span></div>
+          <div class="notification-main">Payment complete</div>
+          <div class="notification-sub">$4.80 at Harbor Coffee</div>
+        </div>
+        <div class="capture-zone" id="captureZone">
+          <div class="capture-line"></div>
+          <div class="capture-result">
+            <div><div class="ledger-name">Harbor Coffee</div><div class="ledger-meta">Dining / Today</div></div>
+            <div class="ledger-amount">$4.80</div>
+          </div>
+        </div>
+        <div class="spacer"></div>
+        <button class="primary" id="captureBtn" type="button">Keep this expense</button>
+      </section>
+
+      <!-- Screen 6: Permission -->
+      <section class="screen" data-screen="6">
+        <h2>Nagi needs Android Notification Access.</h2>
+        <div class="permission-copy"><strong>Android's switch gives Nagi visibility into notifications from all apps.</strong> Nagi filters supported payment notifications on your phone. You can turn access off at any time.</div>
+        <details>
+          <summary>Read what this means</summary>
+          <div class="details-body">Nagi does not need your bank login. Automatic capture depends on the details shown by your payment app, so some notifications may need your help. The production privacy wording will be checked against the final app, its logs, backups, SDKs, and optional Couple Sync.</div>
+        </details>
+        <div class="spacer"></div>
+        <button class="primary" data-next type="button">I understand</button>
+      </section>
+
+      <!-- Screen 7: Paywall -->
+      <section class="screen" data-screen="7">
+        <div class="review-label">Review build / nothing will be charged</div>
+        <h2>Let Nagi keep the record.</h2>
+        <div class="value-pair">
+          <div class="value-row"><div class="value-title">Capture</div><div class="value-copy">Supported payment notifications become expenses you can review.</div></div>
+          <div class="value-row"><div class="value-title">Understand</div><div class="value-copy">Keep your history, categories, and trends in one quiet view.</div></div>
+        </div>
+        <div class="offer">
+          <div><div class="trial">7 days free</div><div class="after-trial">Prototype offer</div></div>
+          <div class="price">then US$24.99/year</div>
+        </div>
+        <p class="billing">Prototype pricing only. A production offer would use Google Play's localized price, eligibility, renewal terms, and cancellation flow.</p>
+        <button class="primary" id="trialBtn" type="button">Start my 7-day trial</button>
+        <button class="secondary" id="lifetimeBtn" type="button">Buy once for $79.99</button>
+        <p class="billing" id="lifetimeNote" hidden>No subscription. One payment, yours forever. Same features.</p>
+        <div class="legal">
+          <button data-toast="Restore purchases is not connected in this review build." type="button">Restore</button>
+          <button data-toast="Terms are not final yet." type="button">Terms</button>
+          <button data-toast="Privacy wording is not final yet." type="button">Privacy</button>
+        </div>
+      </section>
+
+      <!-- Screen 8: Notification access setup -->
+      <section class="screen" data-screen="8">
+        <h2>Turn on automatic tracking.</h2>
+        <p class="lead">Android will open its own settings page. Find Nagi, turn on Notification Access, then come back.</p>
+        <div class="setting-line"><span>Notification Access</span><span class="off">Off</span></div>
+        <p class="setup-copy">The app will check the setting when you return. It will not assume you turned it on.</p>
+        <div class="spacer"></div>
+        <button class="primary" data-toast="This webpage cannot open Android settings." type="button">Open Android settings</button>
+        <button class="secondary" id="skipSetup" type="button">Skip for now</button>
+      </section>
+
+      <!-- Screen 9: Done -->
+      <section class="screen" data-screen="9">
+        <div class="spacer"></div>
+        <div class="done-block">
+          <div class="square"></div>
+          <h2>You're set.</h2>
+          <p class="lead" style="text-align:center">Nagi will keep the record quietly. You can turn on automatic tracking anytime in Settings.</p>
+          <div class="done-line"><span></span></div>
+        </div>
+        <div class="spacer"></div>
+        <button class="primary" id="enterApp" type="button">Enter Nagi</button>
+      </section>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    const screens = [...document.querySelectorAll('.screen')];
+    const steps = document.getElementById('steps');
+    const back = document.getElementById('back');
+    const toast = document.getElementById('toast');
+    let current = 0;
+    let toastTimer;
+    let selectedPains = new Set();
+
+    const painCopy = {
+      manual: { title: 'Logging every purchase', detail: 'Nagi captures payment notifications automatically. You only step in to correct something.' },
+      privacy: { title: 'Bank connection concerns', detail: 'No bank login needed. Nagi works from notifications on your phone.' },
+      complex: { title: 'Too many moving parts', detail: 'One screen, one purpose. No budgets to configure, no categories to set up before you start.' },
+      sync: { title: 'Sharing with people you trust', detail: 'Couple Sync lets two people share household spending without merging their private ledgers.' },
+      clutter: { title: 'Budgeting apps that demand too much', detail: 'A quiet daily record comes first. Trends and budgets are there when you want them.' },
+      insight: { title: 'Tracking without learning', detail: 'Nagi shows what changed, not just what happened. Category movement and trends surface the pattern.' }
+    };
+
+    const historyQuestions = {
+      current: 'What makes you want something different?',
+      stopped: 'What made you stop?',
+      spreadsheet: 'What makes it hard to keep up?',
+      none: 'What has put you off?'
+    };
+
+    screens.forEach((_, index) => {
+      const step = document.createElement('span');
+      step.className = 'step';
+      step.setAttribute('aria-hidden', 'true');
+      steps.appendChild(step);
+    });
+
+    function showScreen(index) {
+      if (index < 0 || index >= screens.length) return;
+      screens[current].classList.remove('is-active');
+      current = index;
+      screens[current].classList.add('is-active');
+      back.classList.toggle('is-visible', current > 0);
+      [...steps.children].forEach((step, i) => step.classList.toggle('is-current', i === current));
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      if (screens[current].querySelector('.intro-line')) revealIntro();
+    }
+
+    function showToast(message) {
+      clearTimeout(toastTimer);
+      toast.textContent = message;
+      toast.classList.add('is-visible');
+      toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2400);
+    }
+
+    function resetCapture() {
+      const zone = document.getElementById('captureZone');
+      const btn = document.getElementById('captureBtn');
+      zone.classList.remove('is-done');
+      btn.textContent = 'Keep this expense';
+      btn.disabled = false;
+    }
+
+    function renderReasons() {
+      const list = document.getElementById('reasonList');
+      list.innerHTML = '';
+      selectedPains.forEach(pain => {
+        const copy = painCopy[pain];
+        if (!copy) return;
+        const item = document.createElement('div');
+        item.className = 'reason-item';
+        item.innerHTML = '<span class="reason-dot"></span><div><div class="reason-title"></div><div class="reason-detail-line"></div></div>';
+        item.querySelector('.reason-title').textContent = copy.title;
+        item.querySelector('.reason-detail-line').textContent = copy.detail;
+        list.appendChild(item);
+      });
+    }
+
+    // Navigation
+    document.querySelectorAll('[data-next]').forEach(button => button.addEventListener('click', () => showScreen(current + 1)));
+    document.querySelectorAll('[data-toast]').forEach(button => button.addEventListener('click', () => showToast(button.dataset.toast)));
+    back.addEventListener('click', () => {
+      const target = current - 1;
+      if (target === 5) resetCapture();
+      showScreen(target);
+    });
+
+    // History selection (single)
+    document.getElementById('historyChoices').addEventListener('click', event => {
+      const choice = event.target.closest('[data-history]');
+      if (!choice) return;
+      document.querySelectorAll('[data-history]').forEach(item => item.setAttribute('aria-pressed', 'false'));
+      choice.setAttribute('aria-pressed', 'true');
+      const q = historyQuestions[choice.dataset.history];
+      document.getElementById('painTitle').textContent = q;
+      document.getElementById('historyNext').disabled = false;
+    });
+
+    // Pain selection (multi)
+    document.getElementById('painChoices').addEventListener('click', event => {
+      const choice = event.target.closest('[data-pain]');
+      if (!choice) return;
+      const pain = choice.dataset.pain;
+      const pressed = choice.getAttribute('aria-pressed') === 'true';
+      choice.setAttribute('aria-pressed', String(!pressed));
+      if (!pressed) selectedPains.add(pain); else selectedPains.delete(pain);
+      document.getElementById('painNext').disabled = selectedPains.size === 0;
+    });
+
+    document.getElementById('painNext').addEventListener('click', () => renderReasons());
+
+    // Capture demo
+    document.getElementById('captureBtn').addEventListener('click', () => {
+      const zone = document.getElementById('captureZone');
+      const btn = document.getElementById('captureBtn');
+      zone.classList.add('is-done');
+      btn.textContent = 'Kept';
+      btn.disabled = true;
+      setTimeout(() => showScreen(6), 1400);
+    });
+
+    // Paywall
+    document.getElementById('trialBtn').addEventListener('click', () => showScreen(8));
+    document.getElementById('lifetimeBtn').addEventListener('click', () => {
+      const note = document.getElementById('lifetimeNote');
+      note.hidden = !note.hidden;
+      showToast(note.hidden ? '' : 'One-time purchase selected');
+    });
+
+    // Setup screen
+    document.getElementById('skipSetup').addEventListener('click', () => showScreen(9));
+
+    // Done
+    document.getElementById('enterApp').addEventListener('click', () => { location.href = 'app.html'; });
+
+
+    // Intro screen staggered reveal
+    function revealIntro() {
+      const lines = document.querySelectorAll('.screen.is-active .intro-line');
+      lines.forEach(line => {
+        const delay = parseInt(line.dataset.delay || '0', 10);
+        setTimeout(() => line.classList.add('is-shown'), delay);
+      });
+    }
+
+    showScreen(0);
+  </script>
+</body>
+</html>
