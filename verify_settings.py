@@ -100,8 +100,8 @@ with sync_playwright() as p:
     page.screenshot(path=str(OUT / "settings-01-full.png"), full_page=True)
 
     # Privacy
-    assert page.get_by_text("Bank integration", exact=False).count() >= 1
-    assert page.get_by_text("Never", exact=False).count() >= 1
+    assert page.get_by_text("Bank integration", exact=False).count() == 0
+    assert page.get_by_text("Nagi never connects to your bank", exact=False).count() == 0
 
     # Nav to Today
     page.get_by_role("button", name="Today", exact=True).click()
