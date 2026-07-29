@@ -16,36 +16,31 @@ with sync_playwright() as p:
 
     assert page.get_by_role("heading", name="Quiet by default", exact=True).count() == 1
 
-    # Region selector exists and defaults to Singapore
-    region = page.locator("#regionSelect")
-    assert region.get_attribute("value") == "sg" or region.evaluate("el => el.selectedIndex") == 0
-    assert page.get_by_text("DBS PayLah!", exact=False).count() >= 1
-    # Grab and Shopee must NOT exist
-    assert page.get_by_text("Grab", exact=False).count() == 0
-    assert page.get_by_text("Shopee", exact=False).count() == 0
-    assert page.locator("#captureSources .toggle").count() == 3
+    # Capture health is passive and transparent. There is no source-selection chore.
+    assert page.get_by_text("Capture health", exact=True).count() == 1
+    assert page.locator(".setting-label").filter(has_text="Notification access").count() == 1
+    assert page.locator(".setting-label").filter(has_text="Last capture").count() == 1
+    assert page.get_by_text("Notifications received", exact=True).count() == 1
+    assert page.get_by_text("47", exact=True).count() >= 1
+    assert page.get_by_text("Unresolved", exact=True).count() == 1
+    assert page.get_by_text("0", exact=True).count() >= 1
+    assert page.get_by_text("Nagi can only count payment notifications it receives", exact=False).count() == 1
+    assert page.locator("#regionSelect").count() == 0
+    assert page.locator("#captureSources .toggle").count() == 0
 
-    # Change region to Australia
-    region.select_option("au")
-    page.wait_for_timeout(300)
-    assert page.get_by_text("CommBank", exact=False).count() >= 1
-    assert page.get_by_text("DBS PayLah!", exact=False).count() == 0
-    assert page.locator("#captureSources .toggle").count() == 3
-
-    # Change back to Singapore
-    region.select_option("sg")
-    page.wait_for_timeout(300)
-    assert page.get_by_text("DBS PayLah!", exact=False).count() >= 1
-
-    # Toggle interaction
-    toggle = page.locator("#captureSources .toggle").first
-    initial = toggle.get_attribute("aria-checked")
-    toggle.click()
-    assert toggle.get_attribute("aria-checked") != initial
+    # Capture history exposes source and outcome without cluttering Today.
+    page.get_by_role("button", name="View capture history", exact=True).click()
+    assert page.locator("#captureSheet.open").count() == 1
+    assert page.locator("#captureHistory .capture-event").count() == 3
+    assert page.get_by_text("Google Wallet", exact=True).count() >= 1
+    assert page.get_by_text("Recorded", exact=True).count() >= 1
+    page.locator("#closeCapture").click()
+    assert page.locator("#captureSheet.open").count() == 0
 
     # Categories - functional management
-    assert page.locator(".cat-row").count() == 5
-    assert page.get_by_text("3 rules", exact=False).count() >= 1  # Food has 3 rules
+    assert page.locator(".cat-row").count() == 6
+    assert page.get_by_text("3 merchant rules", exact=False).count() >= 1
+    assert page.get_by_text("Dining, Groceries", exact=False).count() == 0
 
     # Open category edit sheet
     page.get_by_role("button", name="Food", exact=False).first.click()
@@ -73,6 +68,15 @@ with sync_playwright() as p:
     assert page.locator("#catSheet.open").count() == 0
     assert page.get_by_text("Food & Drink", exact=False).count() >= 1
 
+    # Add a flat custom category without creating a subcategory hierarchy.
+    page.get_by_role("button", name="Add category", exact=True).click()
+    assert page.locator("#catSheet.open").count() == 1
+    assert page.locator("#catEditName").input_value() == "New category"
+    page.locator("#catEditName").fill("Healthcare")
+    page.get_by_role("button", name="Save changes", exact=True).click()
+    assert page.get_by_text("Healthcare", exact=True).count() == 1
+    assert page.locator(".cat-row").count() == 7
+
     # Recurring section
     assert page.get_by_text("Recurring expenses", exact=True).count() == 1
     assert page.locator("#recurringList .recurring-row").count() == 5
@@ -80,16 +84,18 @@ with sync_playwright() as p:
     assert page.get_by_text("$372.96", exact=False).count() == 0  # no total shown, just individual
     assert page.get_by_text("Add recurring expense", exact=True).count() == 1
 
-    # Couple Sync
-    assert page.get_by_text("Total household", exact=False).count() >= 1
-    assert "$7,317" in page.locator(".combined-preview").inner_text()
+    # Sharing is deferred to a later phase.
+    assert page.get_by_text("Couple Sync", exact=False).count() == 0
+    assert page.get_by_text("Kelly", exact=False).count() == 0
+    assert page.get_by_text("Total household", exact=False).count() == 0
 
-    # Disconnect
-    page.get_by_role("button", name="Disconnect", exact=True).click()
-    assert page.locator("#toast").inner_text() == "Disconnected from Kelly"
-    page.wait_for_timeout(300)
-    assert page.locator("#disconnectedState").evaluate("el => getComputedStyle(el).display") != "none"
-    assert page.get_by_text("nagi.app/join", exact=False).count() >= 1
+    # Paid app includes complete export and restore, not CSV-only portability.
+    assert page.get_by_text("Data", exact=True).count() == 1
+    assert page.get_by_text("Records, rules, recurring expenses and settings", exact=False).count() == 1
+    page.get_by_role("button", name="Export", exact=True).click()
+    assert page.locator("#toast").inner_text() == "Nagi backup ready to export"
+    page.get_by_role("button", name="Restore", exact=True).click()
+    assert page.locator("#toast").inner_text() == "Choose a Nagi backup in the full app"
     page.wait_for_timeout(500)
     page.screenshot(path=str(OUT / "settings-01-full.png"), full_page=True)
 
@@ -108,8 +114,8 @@ with sync_playwright() as p:
 
     reduced = browser.new_page(viewport={"width": 430, "height": 932}, reduced_motion="reduce")
     reduced.goto(URL, wait_until="networkidle")
-    assert reduced.locator(".rest-track span").evaluate("el => getComputedStyle(el).animationName") == "none"
+    assert reduced.locator(".content").evaluate("el => getComputedStyle(el).animationName") == "none"
     reduced.close()
 
-    print("PASS: region selector + dynamic capture sources, category management (rename/rules/add/remove), recurring section, Couple Sync, privacy, navigation, reduced motion, responsiveness, and console")
+    print("PASS: passive capture health/history, no sharing phase, category management, recurring expenses, complete data portability, privacy, navigation, reduced motion, responsiveness, and console")
     browser.close()

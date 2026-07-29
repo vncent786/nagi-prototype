@@ -38,7 +38,7 @@ with sync_playwright() as p:
     # Screen 2: Pain (multi-select)
     assert page.locator(".screen.is-active").get_attribute("data-screen") == "2"
     assert page.get_by_text("It's too complex", exact=False).count() >= 1
-    assert page.get_by_text("share with people I care about", exact=False).count() >= 1
+    assert page.get_by_text("share with people I care about", exact=False).count() == 0
     page.get_by_role("button", name="It's too complex", exact=False).click()
     page.get_by_role("button", name="Entering every purchase gets old", exact=True).click()
     page.get_by_text("Choose all that apply", exact=True)
@@ -113,8 +113,14 @@ with sync_playwright() as p:
     assert page.locator(".screen.is-active").get_attribute("data-screen") == "5"
     page.get_by_role("button", name="Keep this expense", exact=True).click()
     page.wait_for_timeout(1500)
-    # Screen 6: permission, press back
+    # Screen 6: permission is honest without adding a compatibility test or source selection.
     assert page.locator(".screen.is-active").get_attribute("data-screen") == "6"
+    page.locator("details").filter(has=page.get_by_text("Read what this means", exact=True)).locator("summary").click()
+    assert page.get_by_text("If your payment app sends no notification, Nagi cannot record that payment.", exact=False).count() == 1
+    assert page.get_by_text("Couple Sync", exact=False).count() == 0
+    assert page.locator('[data-pain="sync"]').count() == 0
+    assert page.get_by_text("I want to share with people I care about", exact=True).count() == 0
+    assert page.get_by_text("budgets are there when you want them", exact=False).count() == 0
     page.get_by_role("button", name="Back", exact=True).click()
     page.wait_for_timeout(300)
     # Back at screen 5, button should be re-enabled

@@ -561,7 +561,7 @@
           <button class="choice" data-pain="manual" aria-pressed="false" type="button"><span>Entering every purchase gets old</span><span class="choice-box"></span></button>
           <button class="choice" data-pain="privacy" aria-pressed="false" type="button"><span>I don't want to connect my bank</span><span class="choice-box"></span></button>
           <button class="choice" data-pain="complex" aria-pressed="false" type="button"><span>It's too complex</span><span class="choice-box"></span></button>
-          <button class="choice" data-pain="sync" aria-pressed="false" type="button"><span>I want to share with people I care about</span><span class="choice-box"></span></button>
+
           <button class="choice" data-pain="clutter" aria-pressed="false" type="button"><span>Budgeting apps feel like too much work</span><span class="choice-box"></span></button>
           <button class="choice" data-pain="insight" aria-pressed="false" type="button"><span>I track things but learn very little</span><span class="choice-box"></span></button>
         </div>
@@ -633,7 +633,7 @@
         <div class="permission-copy"><strong>Android's switch gives Nagi visibility into notifications from all apps.</strong> Nagi filters supported payment notifications on your phone. You can turn access off at any time.</div>
         <details>
           <summary>Read what this means</summary>
-          <div class="details-body">Nagi does not need your bank login. Automatic capture depends on the details shown by your payment app, so some notifications may need your help. The production privacy wording will be checked against the final app, its logs, backups, SDKs, and optional Couple Sync.</div>
+          <div class="details-body">Nagi does not need your bank login. Automatic capture depends on the notification sent by your payment app, so some captures may need your help. If your payment app sends no notification, Nagi cannot record that payment. The production privacy wording will be checked against the final app, its logs, backups and SDKs.</div>
         </details>
         <div class="spacer"></div>
         <button class="primary" data-next type="button">I understand</button>
@@ -703,8 +703,7 @@
       manual: { title: 'Logging every purchase', detail: 'Nagi captures payment notifications automatically. You only step in to correct something.' },
       privacy: { title: 'Bank connection concerns', detail: 'No bank login needed. Nagi works from notifications on your phone.' },
       complex: { title: 'Too many moving parts', detail: 'One screen, one purpose. No budgets to configure, no categories to set up before you start.' },
-      sync: { title: 'Sharing with people you trust', detail: 'Couple Sync lets two people share household spending without merging their private ledgers.' },
-      clutter: { title: 'Budgeting apps that demand too much', detail: 'A quiet daily record comes first. Trends and budgets are there when you want them.' },
+      clutter: { title: 'Budgeting apps that demand too much', detail: 'A quiet daily record comes first. Simple trends are there when you want them.' },
       insight: { title: 'Tracking without learning', detail: 'Nagi shows what changed, not just what happened. Category movement and trends surface the pattern.' }
     };
 

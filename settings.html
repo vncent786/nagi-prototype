@@ -37,15 +37,19 @@
     .status-dot{width:6px;height:6px;border-radius:0}
     .status-dot.on{background:var(--accent)} .status-dot.off{background:var(--faint)}
 
-    /* Region selector */
-    .region-select{
-      width:100%;min-height:48px;margin-bottom:16px;padding:0 12px;
-      border:1px solid var(--line);background:var(--white);color:var(--ink);
-      font-size:13px;cursor:pointer;outline:0;-webkit-appearance:none;appearance:none;
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='none' stroke='%23a3a199' stroke-width='1' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
-      background-repeat:no-repeat;background-position:right 14px center;
-    }
-    .region-select:focus{border-color:var(--accent)}
+    /* Capture health */
+    .health-grid{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}
+    .health-item{min-height:74px;padding:14px 0;border-bottom:1px solid var(--line)}
+    .health-item:nth-child(odd){padding-right:16px;border-right:1px solid var(--line)}
+    .health-item:nth-child(even){padding-left:16px}
+    .health-value{font-size:18px;font-variant-numeric:tabular-nums}
+    .health-name{margin-top:5px;color:var(--muted);font-size:10px}
+    .capture-note{margin:14px 0 0;color:var(--faint);font-size:10px;line-height:1.55}
+    .capture-history-btn{display:block;margin:18px 0 0 auto;padding:0 0 3px;border:0;border-bottom:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;font-size:11px}
+    .capture-event{display:flex;align-items:center;justify-content:space-between;min-height:58px;border-bottom:1px solid var(--line);gap:16px}
+    .capture-event:first-child{border-top:1px solid var(--line)}
+    .capture-source{font-size:13px}.capture-time{margin-top:3px;color:var(--muted);font-size:10px}
+    .capture-outcome{color:var(--accent);font-size:11px}
 
     /* Category management */
     .cat-row{min-height:54px;padding:0;border-bottom:1px solid var(--line);gap:16px;cursor:pointer;background:transparent;width:100%;text-align:left;border-left:0;border-right:0;border-top:0}
@@ -63,28 +67,6 @@
     .recurring-amount{flex:0 0 auto;font-variant-numeric:tabular-nums;font-size:13px;color:var(--accent)}
     .add-btn{display:block;margin:18px 0 0 auto;padding:0 0 3px;border:0;border-bottom:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;font-size:11px}
 
-    /* Couple Sync card */
-    .sync-card{margin-top:50px;padding:24px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-    .sync-head{display:flex;align-items:center;gap:9px;margin-bottom:14px;color:var(--muted);font-size:10px;letter-spacing:.07em}
-    .sync-state{margin-top:6px}
-    .partner-card{margin-top:18px;padding:16px;border:1px solid var(--line);background:var(--white)}
-    .partner-top{display:flex;align-items:center;justify-content:space-between}
-    .partner-name{font-size:14px}
-    .partner-meta{margin-top:3px;color:var(--muted);font-size:10px}
-    .partner-actions{margin-top:14px;display:flex;gap:8px}
-    .partner-actions button{min-height:38px;padding:0 12px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;font-size:11px}
-    .partner-actions button.danger{color:var(--danger);border-color:transparent}
-    .invite-block{margin-top:18px}
-    .invite-link{display:flex;align-items:center;gap:10px;margin-top:12px;padding:12px 14px;border:1px solid var(--line);background:var(--white);font-size:11px;color:var(--muted)}
-    .invite-link code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);font-size:11px}
-    .copy-btn{flex:0 0 auto;min-height:34px;padding:0 10px;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;font-size:10px}
-    .combined-preview{margin-top:20px;padding:14px 16px;border:1px solid var(--line);background:var(--accent-pale)}
-    .combined-label{color:var(--accent);font-size:10px;letter-spacing:.07em}
-    .combined-row{display:flex;justify-content:space-between;margin-top:10px;font-size:12px}
-    .combined-row span:last-child{font-variant-numeric:tabular-nums;color:var(--accent)}
-    .rest-track{position:relative;height:1px;margin:36px 0 0;background:var(--line)}
-    .rest-track span{position:absolute;top:-2px;width:5px;height:5px;background:var(--accent);animation:rest 2.8s cubic-bezier(.4,0,.2,1) both}
-    @keyframes rest{from{left:0}to{left:calc(100% - 5px)}}
 
     /* Bottom sheet */
     .sheet-backdrop{position:fixed;z-index:30;inset:0;display:none;align-items:flex-end;justify-content:center;background:rgba(42,42,40,.22);backdrop-filter:blur(2px)}
@@ -126,27 +108,30 @@
 
       <!-- Capture -->
       <section class="section" aria-labelledby="captureLabel">
-        <div class="section-label" id="captureLabel">Capture</div>
-        <select class="region-select" id="regionSelect" aria-label="Region">
-          <option value="sg" selected>Singapore</option>
-          <option value="my">Malaysia</option>
-          <option value="id">Indonesia</option>
-          <option value="au">Australia</option>
-          <option value="uk">United Kingdom</option>
-          <option value="us">United States</option>
-          <option value="other">Other</option>
-        </select>
+        <div class="section-label" id="captureLabel">Capture health</div>
         <div class="setting-row">
-          <div class="setting-label">Notification Access<div class="setting-detail">Nagi reads payment alerts to log expenses</div></div>
+          <div class="setting-label">Notification access<div class="setting-detail">Nagi can receive supported payment notifications</div></div>
           <span class="setting-value"><span class="status-dot on"></span> Active</span>
         </div>
-        <div id="captureSources"></div>
+        <div class="setting-row">
+          <div class="setting-label">Last capture<div class="setting-detail">Google Wallet / Harbor Coffee</div></div>
+          <span class="setting-value">Today, 2:14 PM</span>
+        </div>
+        <div class="health-grid" aria-label="Sample capture summary">
+          <div class="health-item"><div class="health-value">47</div><div class="health-name">Notifications received</div></div>
+          <div class="health-item"><div class="health-value">45</div><div class="health-name">Recorded</div></div>
+          <div class="health-item"><div class="health-value">2</div><div class="health-name">Reviewed</div></div>
+          <div class="health-item"><div class="health-value">0</div><div class="health-name">Unresolved</div></div>
+        </div>
+        <p class="capture-note">Nagi can only count payment notifications it receives. If a payment app sends no notification, Nagi cannot know that payment happened.</p>
+        <button class="capture-history-btn" id="openCaptureHistory" type="button">View capture history</button>
       </section>
 
       <!-- Categories -->
       <section class="section" aria-labelledby="catLabel">
         <div class="section-label" id="catLabel">Categories</div>
         <div id="categoryList"></div>
+        <button class="add-btn" id="addCategory" type="button">Add category</button>
       </section>
 
       <!-- Recurring -->
@@ -162,41 +147,6 @@
         <button class="add-btn" id="addRecurring" type="button">Add recurring expense</button>
       </section>
 
-      <!-- Couple Sync -->
-      <section class="sync-card" aria-labelledby="syncLabel">
-        <div class="sync-head" id="syncLabel">Couple Sync</div>
-        <div id="connectedState" class="sync-state">
-          <h2>You and <span style="color:var(--accent)">Kelly</span> are sharing</h2>
-          <div class="partner-card">
-            <div class="partner-top">
-              <div><div class="partner-name">Kelly</div><div class="partner-meta">Connected 3 weeks ago</div></div>
-              <span class="status-dot on"></span>
-            </div>
-            <div class="partner-actions">
-              <button id="manageShare" type="button">Sharing preferences</button>
-              <button class="danger" id="disconnect" type="button">Disconnect</button>
-            </div>
-          </div>
-          <div class="combined-preview">
-            <div class="combined-label">Combined this month</div>
-            <div class="combined-row"><span>Your spending</span><span>$3,247</span></div>
-            <div class="combined-row"><span>Kelly's spending</span><span>$2,890</span></div>
-            <div class="combined-row"><span>Shared household</span><span>$1,180</span></div>
-            <div class="combined-row" style="border-top:1px solid var(--accent);padding-top:8px;margin-top:8px"><span style="color:var(--ink)">Total household</span><span style="font-size:14px">$7,317</span></div>
-          </div>
-        </div>
-        <div id="disconnectedState" class="sync-state" style="display:none">
-          <h2>Share with your partner</h2>
-          <p style="color:var(--muted);font-size:12px;line-height:1.55;margin-top:8px">Both of you keep tracking independently. Nagi shows combined household spending without either person giving up their private ledger.</p>
-          <div class="invite-block">
-            <div class="invite-link">
-              <code id="inviteCode">nagi.app/join/k7m2x9</code>
-              <button class="copy-btn" id="copyInvite" type="button">Copy</button>
-            </div>
-          </div>
-        </div>
-        <div class="rest-track" aria-hidden="true"><span></span></div>
-      </section>
 
       <!-- Privacy -->
       <section class="section" aria-labelledby="privacyLabel">
@@ -204,7 +154,13 @@
         <div class="setting-row"><div class="setting-label">Local storage<div class="setting-detail">All data stays on this device</div></div><span class="setting-value">Always on</span></div>
         <div class="setting-row"><div class="setting-label">Bank integration<div class="setting-detail">Nagi never connects to your bank</div></div><span class="setting-value">Never</span></div>
         <div class="setting-row"><div class="setting-label">Cloud backup<div class="setting-detail">Encrypted optional backup</div></div><button class="toggle" role="switch" aria-checked="false" aria-label="Cloud backup"><span class="knob"></span></button></div>
-        <div class="setting-row"><div class="setting-label">Export data<div class="setting-detail">Download as CSV</div></div><button id="exportData" type="button" style="border:0;background:transparent;color:var(--accent);font-size:11px;cursor:pointer">Export</button></div>
+      </section>
+
+      <!-- Data -->
+      <section class="section" aria-labelledby="dataLabel">
+        <div class="section-label" id="dataLabel">Data</div>
+        <div class="setting-row"><div class="setting-label">Export Nagi backup<div class="setting-detail">Records, rules, recurring expenses and settings</div></div><button id="exportData" type="button" style="border:0;background:transparent;color:var(--accent);font-size:11px;cursor:pointer">Export</button></div>
+        <div class="setting-row"><div class="setting-label">Restore backup<div class="setting-detail">Restore a complete Nagi backup</div></div><button id="restoreData" type="button" style="border:0;background:transparent;color:var(--accent);font-size:11px;cursor:pointer">Restore</button></div>
       </section>
 
       <div class="about">Nagi v0.1 prototype<br>Sample data shown throughout. Nothing is stored or sent.</div>
@@ -233,46 +189,36 @@
     </div>
   </div>
 
+  <!-- Capture history sheet -->
+  <div class="sheet-backdrop" id="captureSheet" role="dialog" aria-modal="true" aria-labelledby="captureSheetTitle">
+    <div class="sheet">
+      <div class="sheet-head"><h3 id="captureSheetTitle">Capture history</h3><button class="sheet-close" id="closeCapture" type="button">Close</button></div>
+      <div id="captureHistory">
+        <div class="capture-event"><div><div class="capture-source">Google Wallet</div><div class="capture-time">Today, 2:14 PM / Harbor Coffee</div></div><span class="capture-outcome">Recorded</span></div>
+        <div class="capture-event"><div><div class="capture-source">DBS</div><div class="capture-time">Today, 12:03 PM / VivoCity</div></div><span class="capture-outcome">Reviewed</span></div>
+        <div class="capture-event"><div><div class="capture-source">SimplyGo</div><div class="capture-time">Yesterday, 8:42 PM / Public transport</div></div><span class="capture-outcome">Recorded</span></div>
+      </div>
+      <p class="capture-note">Sample history. Production records retain source, time, original notification and processing outcome on this device.</p>
+    </div>
+  </div>
+
   <div class="toast" id="toast" role="status"></div>
 
   <script>
     let toastTimer;
     function showToast(message){clearTimeout(toastTimer);const t=document.getElementById('toast');t.textContent=message;t.classList.add('show');toastTimer=setTimeout(()=>t.classList.remove('show'),2200)}
 
-    /* Region-aware capture sources */
-    const regionSources={
-      sg:[['DBS PayLah!','Card and wallet notifications',true],['OCBC Pay Anyone','Wallet transfers',true],['SimplyGo','Public transport charges',true]],
-      my:[['Maybank2u','Card and account notifications',true],['Touch\u2019n Go eWallet','Wallet payments',true],['SimplyGo','Public transport',false]],
-      id:[['m-Banking','Bank transfer notifications',true],['GoPay','Wallet payments',true],['OVO','Wallet payments',false]],
-      au:[['CommBank','Card and account notifications',true],['Wise','International transfers',false],['Revolut','Card and multi-currency',false]],
-      uk:[['Monzo','Card and account notifications',true],['Wise','International transfers',false],['Revolut','Card and multi-currency',false]],
-      us:[['Venmo','Payments and transfers',true],['Apple Pay','Wallet transactions',false],['Wise','International transfers',false]],
-      other:[['Primary bank app','Card notifications',true],['Wise','International transfers',false]]
-    };
-    function renderSources(region){
-      const container=document.getElementById('captureSources');container.innerHTML='';
-      regionSources[region].forEach(([name,detail,on])=>{
-        const row=document.createElement('div');row.className='setting-row';
-        row.innerHTML='<div class="setting-label"></div>';
-        row.querySelector('.setting-label').innerHTML='<div>'+name+'</div><div class="setting-detail">'+detail+'</div>';
-        const btn=document.createElement('button');btn.className='toggle';btn.type='button';btn.setAttribute('role','switch');btn.setAttribute('aria-checked',String(on));btn.setAttribute('aria-label',name+' capture');
-        const knob=document.createElement('span');knob.className='knob';btn.appendChild(knob);btn.addEventListener('click',()=>{const checked=btn.getAttribute('aria-checked')==='true';btn.setAttribute('aria-checked',String(!checked))});
-        row.appendChild(btn);container.appendChild(row);
-      });
-    }
-    document.getElementById('regionSelect').addEventListener('change',e=>{renderSources(e.target.value);showToast('Capture sources updated for '+(e.target.selectedOptions[0].text))});
-    renderSources('sg');
 
-    /* Toggles for privacy etc */
-    document.querySelectorAll('.toggle').forEach(t=>{if(!t.closest('#captureSources')&&!t.closest('#catSheet')){t.addEventListener('click',()=>{const on=t.getAttribute('aria-checked')==='true';t.setAttribute('aria-checked',String(!on))})}});
+    document.querySelectorAll('.toggle').forEach(t=>{t.addEventListener('click',()=>{const on=t.getAttribute('aria-checked')==='true';t.setAttribute('aria-checked',String(!on))})});
 
     /* Category management */
     const categories=[
-      {name:'Food',subs:'Dining, Groceries',rules:[['FairPrice','Groceries'],['Cold Storage','Groceries'],['GrabFood','Dining']]},
-      {name:'Transport',subs:'Public, Rides, Fuel',rules:[['SimplyGo','Public'],['Grab','Rides'],['Shell','Fuel']]},
-      {name:'Shopping',subs:'Retail, Online',rules:[['Shopee','Online'],['Lazada','Online'],['Uniqlo','Retail']]},
-      {name:'Bills',subs:'Utilities, Subscriptions',rules:[['Netflix','Subscriptions'],['SP Group','Utilities']]},
-      {name:'Other',subs:'Miscellaneous',rules:[]}
+      {name:'Food',rules:[['FairPrice','Food'],['Cold Storage','Food'],['GrabFood','Food']]},
+      {name:'Transport',rules:[['SimplyGo','Transport'],['Grab','Transport'],['Shell','Transport']]},
+      {name:'Shopping',rules:[['Shopee','Shopping'],['Lazada','Shopping'],['Uniqlo','Shopping']]},
+      {name:'Bills',rules:[['Netflix','Bills'],['SP Group','Bills']]},
+      {name:'Education',rules:[]},
+      {name:'Other',rules:[]}
     ];
     let editingCat=null;
     function renderCategories(){
@@ -282,7 +228,7 @@
         btn.innerHTML='<div><div class="cat-name"></div><div class="cat-meta"></div></div><span class="chevron">\u203a</span>';
         btn.querySelector('.cat-name').textContent=cat.name;
         const ruleCount=cat.rules.length;
-        btn.querySelector('.cat-meta').textContent=cat.subs+(ruleCount>0?' / '+ruleCount+' rule'+(ruleCount>1?'s':''):' / No rules yet');
+        btn.querySelector('.cat-meta').textContent=ruleCount>0?ruleCount+' merchant rule'+(ruleCount>1?'s':''):'No merchant rules yet';
         btn.addEventListener('click',()=>openCatSheet(i));list.appendChild(btn);
       });
     }
@@ -311,17 +257,22 @@
     });
     document.getElementById('saveCat').addEventListener('click',()=>{
       const newName=document.getElementById('catEditName').value.trim();
-      if(newName)categories[editingCat].name=newName;
+      if(newName){categories[editingCat].name=newName;categories[editingCat].rules.forEach(rule=>rule[1]=newName)}
       renderCategories();document.getElementById('catSheet').classList.remove('open');showToast('Category saved');
+    });
+    document.getElementById('addCategory').addEventListener('click',()=>{
+      categories.push({name:'New category',rules:[]});
+      renderCategories();openCatSheet(categories.length-1);
     });
     renderCategories();
 
-    /* Couple Sync */
-    const connected=document.getElementById('connectedState'),disconnected=document.getElementById('disconnectedState');
-    document.getElementById('disconnect').addEventListener('click',()=>{connected.style.display='none';disconnected.style.display='block';showToast('Disconnected from Kelly')});
-    document.getElementById('copyInvite').addEventListener('click',()=>{navigator.clipboard?.writeText(document.getElementById('inviteCode').textContent).catch(()=>{});showToast('Invite link copied')});
-    document.getElementById('manageShare').addEventListener('click',()=>showToast('Sharing preferences are part of the full app'));
-    document.getElementById('exportData').addEventListener('click',()=>showToast('Export would download a CSV in the full app'));
+    /* Capture history and data */
+    const captureSheet=document.getElementById('captureSheet');
+    document.getElementById('openCaptureHistory').addEventListener('click',()=>captureSheet.classList.add('open'));
+    document.getElementById('closeCapture').addEventListener('click',()=>captureSheet.classList.remove('open'));
+    captureSheet.addEventListener('click',e=>{if(e.target===captureSheet)captureSheet.classList.remove('open')});
+    document.getElementById('exportData').addEventListener('click',()=>showToast('Nagi backup ready to export'));
+    document.getElementById('restoreData').addEventListener('click',()=>showToast('Choose a Nagi backup in the full app'));
     document.getElementById('addRecurring').addEventListener('click',()=>showToast('Add recurring is part of the full app'));
 
     /* Nav */
